@@ -1,7 +1,16 @@
 import os
+import sys
 import uuid
 from tabulate import tabulate
 
+# gettig arguments and load analyzer or just the preis program
+
+arguments = sys.argv
+
+if len(arguments) > 1:
+	if os.path.isfile(os.getcwd() + '/' + arguments[1]):
+		os.system('python ' + os.getcwd() + '/preis_t_analyze.py ' + arguments[1])
+		exit()
 
 
 # presets
@@ -97,7 +106,7 @@ class Entries_Class(object):
 			else:
 				delete = menu('Delete [no]: ')
 				if delete == 'yes' or delete == 'y':
-					self.mods.pop(which)
+					self.mods.pop(which - len(self.list))
 					return
 
 				which = int(which) - len(self.list)
@@ -199,9 +208,9 @@ class Entries_Class(object):
 		minutes = int( (floaty - hours) * 60 )
 		hours = str(hours) if hours > 9 else '0' + str(hours)
 		minutes = str(minutes) if minutes > 9 else '0' + str(minutes)
-		return hours + ':' + minutes if floaty > 0 else '*'
+		return hours + ':' + minutes if floaty > 0.0 else '*'
 	
-	def show_as_table(self, just_show=False, head=['ID', 'Title', 'Amount', 'H','Price']):
+	def show_as_table(self, just_show=False, head=['ID', 'Title', 'Amount', 'H', 'Price']):
 		show = []
 
 		i = 0
@@ -212,8 +221,8 @@ class Entries_Class(object):
 			show.append( [i, x.title, '*', self.return_time( x.getTime(self.list) ), x.getPrice(self.Wage, self.list)] )
 			i += 1
 		if not just_show:
-			show.append( [str(i), '[New entry]', '...', '?', '?'] )
-			show.append( [str(i+1), '[New mod]', '...', '?', '?'] )
+			show.append( ['a', '[New entry]', '...', '?', '?'] )
+			show.append( ['m', '[New mod]', '...', '?', '?'] )
 			show.append( [ '--', '----', '----', '----', '----' ])
 			show.append( [ '', '', '', self.return_time( self.sum()[0] ), self.sum()[1]])
 			if self.sum()[0] > 0:
@@ -318,7 +327,20 @@ def menu(txt='# ', typ='str'):
 				return 0
 		elif typ == 'float':
 			try:
-				return float(out.replace(',', '.'))
+				if '*' in out:
+					calc = out.split('*')
+					for x in xrange(0,len(calc)):
+						calc[x] = calc[x].replace(',', '.')
+						try:
+							calc[x] = float(calc[x])
+						except Exception, e:
+							calc[x] = 1.0
+					out = 1.0
+					for x in calc:
+						out = out*x
+					return out
+				else:
+					return float(out.replace(',', '.'))
 			except Exception, e:
 				return 0.0
 		elif typ == 'tuple':
@@ -393,6 +415,8 @@ while user != 'exit' and user != 'e':
 		head = ['command', 'result']
 		content = [
 			['0-99', 'edit the entry / mod or chose a number higher to create a new one'],
+			['entry / a', 'adds a new entry'],
+			['mod / m', 'adds a new modulator'],
 			['new / n', 'creates a new project immediately'],
 			['wage / w', 'chose the wage'],
 			['help / h', 'this help text'],
@@ -400,6 +424,16 @@ while user != 'exit' and user != 'e':
 			]
 		print tabulate(content, head)
 		Enter()
+
+	# new  entry
+	elif user == 'entry' or user == 'a':
+		print
+		preset_choser('entry', presets['E'])
+
+	# new modulator
+	elif user == 'mod' or user == 'm':
+		print
+		preset_choser('mod', presets['M'])
 
 	# creates a new project
 	elif user == 'new' or user == 'n':
@@ -425,16 +459,6 @@ while user != 'exit' and user != 'e':
 			if user < Entries.count() and user >= 0:
 				print
 				Entries.edit(user)
-
-			# new  entry
-			elif user == Entries.count():
-				print
-				preset_choser('entry', presets['E'])
-
-			# new modulator
-			elif user == Entries.count()+1:
-				print
-				preset_choser('mod', presets['M'])
 		
 		except Exception, e:
 			pass
