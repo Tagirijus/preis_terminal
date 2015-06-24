@@ -462,3 +462,5 @@ while user != 'exit' and user != 'e':
 		
 		except Exception, e:
 			pass
+
+print
