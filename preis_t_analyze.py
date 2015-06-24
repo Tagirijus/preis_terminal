@@ -20,19 +20,6 @@ row_project_xtra2	= 10
 row_task_xtra1   	= 11
 row_task_xtra2   	= 12
 
-row_caps = [	'Project',
-            	'Task',
-            	'Details',
-            	'Start date',
-            	'Start Time',
-            	'End date',
-            	'End time',
-            	'Duration',
-            	'Duration (dec)',
-            	'Client',
-            	'Project Xtra 2',
-            	'Task Xtra 1',
-            	'Task Xtra 2']
 
 # getting arguments and loading file
 
