@@ -1,6 +1,4 @@
-import os
-import sys
-import uuid
+import os, sys, uuid
 from tabulate import tabulate
 
 # gettig arguments and load analyzer or just the preis program

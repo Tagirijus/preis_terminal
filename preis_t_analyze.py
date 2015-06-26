@@ -1,8 +1,5 @@
-import os
-import sys
+import os, sys, codecs, datetime
 from tabulate import tabulate
-import codecs
-import datetime
 
 
 # row settings - fits to the export csv of Gleeo Time Track App for Android
@@ -67,6 +64,7 @@ class times_class(object):
 		self.filt['clients'] = []
 		self.filt['projects'] = []
 		self.filt['tasks'] = []
+		self.filt['details'] = []
 		self.filt['from'] = datetime.datetime(1900, 1, 1)
 		self.filt['to'] = datetime.datetime(datetime.MAXYEAR, 12, 31)
 		self.filt['year_long'] = False
@@ -75,6 +73,7 @@ class times_class(object):
 		self.clients = self.getClients()
 		self.projects = self.getProjects()
 		self.tasks = self.getTasks()
+		self.details = self.getDetails()
 
 
 	def init_variable(self, the_file, seperator=','):
@@ -107,6 +106,7 @@ class times_class(object):
 		out_clients		= False
 		out_projects	= False
 		out_tasks		= False
+		out_details		= False
 		out_from		= False
 		out_to  		= False
 
@@ -117,6 +117,8 @@ class times_class(object):
 			out_projects = True
 		if array[row_task] in self.filt['tasks'] or len(self.filt['tasks']) == 0:
 			out_tasks = True
+		if array[row_details] in self.filt['details'] or len(self.filt['details']) == 0:
+			out_details = True
 
 		# checking date range
 		start = datetime.datetime.strptime(array[row_start_date] + ' ' + array[row_start_time], '%Y-%m-%d %H:%M')
@@ -126,7 +128,7 @@ class times_class(object):
 		if end < self.filt['to']:
 			out_to = True
 
-		return out_clients and out_projects and out_tasks and out_from and out_to
+		return out_clients and out_projects and out_tasks and out_details and out_from and out_to
 
 
 	def show_menu(self):
@@ -148,6 +150,15 @@ class times_class(object):
 			self.show('projects')
 		elif user == '5':
 			self.show('projectst')
+
+
+	def getDetails(self, task='*', project='*', client='*'):
+		out = {}
+		for c, x in enumerate(self.var):
+			if x[row_details] not in out:
+				if (x[row_task] == task or task == '*') and (x[row_project] == project or project == '*') and (x[row_project_xtra1] == client or client == '*'):
+					out[x[row_details]] = c
+		return out
 
 
 	def getTasks(self, project='*', client='*'):
@@ -234,13 +245,15 @@ class times_class(object):
 		clients_txt = 'ALL' if len(self.filt['clients']) == 0 else ', '.join(self.filt['clients'])
 		projects_txt = 'ALL' if len(self.filt['projects']) == 0 else ', '.join(self.filt['projects'])
 		tasks_txt = 'ALL' if len(self.filt['tasks']) == 0 else ', '.join(self.filt['tasks'])
+		details_txt = 'ALL' if len(self.filt['details']) == 0 else ', '.join(self.filt['details'])
 		print
 		print '(1) Show only clients:  ' + clients_txt
 		print '(2) Show only projects: ' + projects_txt
 		print '(3) Show only tasks:    ' + tasks_txt
-		print '(4) Start:              ' + self.filt['from'].strftime('%Y-%m-%d, %H:%M')
-		print '(5) End:                ' + self.filt['to'].strftime('%Y-%m-%d, %H:%M')
-		print '(6) Back'
+		print '(4) Show only details:  ' + details_txt
+		print '(5) Start:              ' + self.filt['from'].strftime('%Y-%m-%d, %H:%M')
+		print '(6) End:                ' + self.filt['to'].strftime('%Y-%m-%d, %H:%M')
+		print '(7) Back'
 		print
 		user = raw_input('filter > ')
 
@@ -309,6 +322,35 @@ class times_class(object):
 			self.filter_menu()
 		elif user == '4':
 			print
+			iter_me = []
+			if len(self.filt['tasks']) > 0 and len(self.filt['projects']) > 0:
+				for y in self.filt['projects']:
+					for x in self.filt['tasks']:
+						iter_me.extend(self.getDetails(client=x, project=y))
+			elif len(self.filt['tasks']) == 0 and len(self.filt['projects']) > 0:
+				for y in self.filt['projects']:
+					iter_me.extend(self.getDetails(project=y))
+			elif len(self.filt['projects']) > 0:
+					for x in self.filt['projects']:
+						iter_me.extend(self.getDetails(x))
+			else:
+				iter_me = self.details.keys()
+			for c, x in enumerate(iter_me):
+				print str(c) + ': ' + x
+			print
+			userr = raw_input('filter > details > ')
+			if userr == '':
+				self.filt['details'] = []
+			else:
+				try:
+					for x in userr.split(','):
+							if iter_me[int(x)] not in self.filt['details']:
+								self.filt['details'].append( iter_me[int(x)] )
+				except Exception, e:
+					pass
+			self.filter_menu()
+		elif user == '5':
+			print
 			print 'Format: YEAR-MONTH-DAY [HH:MM]'
 			user = raw_input('filter > start > ')
 			if user == '':
@@ -316,7 +358,7 @@ class times_class(object):
 			else:
 				self.filter_set('s ' + user)
 			self.filter_menu()
-		elif user == '5':
+		elif user == '6':
 			print
 			print 'Format: YEAR-MONTH-DAY [HH:MM]'
 			user = raw_input('filter > end > ')
@@ -325,7 +367,7 @@ class times_class(object):
 			else:
 				self.filter_set('e ' + user)
 			self.filter_menu()
-		elif user == '6':
+		elif user == '7':
 			pass
 
 
@@ -467,6 +509,11 @@ while run:
 	print
 	user = raw_input('> ')
 	
+	# debug
+	if user == 'deb':
+		print 'Filter tasks:', times.filt['tasks']
+		print 'Filter details:', times.filt['details']
+
 	# show menu
 	if user == 'show' or user == 's':
 		times.show_menu()
