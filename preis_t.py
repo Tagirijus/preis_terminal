@@ -7,7 +7,7 @@ arguments = sys.argv
 
 if len(arguments) > 1:
 	if os.path.isfile(os.getcwd() + '/' + arguments[1]):
-		os.system('python ' + os.getcwd() + '/preis_t_analyze.py ' + arguments[1])
+		os.system('python ' + os.getcwd() + '/gleeo_timetrack_analyzer.py ' + arguments[1])
 		exit()
 
 
@@ -19,7 +19,7 @@ def dict_merge(a, b):
 	on both values and the result stored in the returned dictionary.'''
 	if not isinstance(b, dict):
 		return b
-	
+
 	result = a.copy()
 	for k, v in b.iteritems():
 		if k in result and isinstance(result[k], dict):
@@ -52,7 +52,7 @@ if os.path.isfile(cur_dir + '/presets.preis_presets'):
 		for x in presets_file:
 			pre_presets.append( x.split('>') )
 		myfile.close()
-		
+
 		presets = array_of_paths_to_dict(pre_presets)
 
 
@@ -77,7 +77,7 @@ class Entries_Class(object):
 
 			# it's an entry
 			if which < len(self.list):
-				
+
 				delete = menu('Delete [no]: ')
 				if delete == 'yes' or delete == 'y':
 					self.list.pop(which)
@@ -88,14 +88,14 @@ class Entries_Class(object):
 				title = menu('Title [' + self.list[which].title + '] : ')
 				title = title or self.list[which].title
 				self.list[which].title = title
-				
+
 				h = menu('H / Amount [' + str(self.list[which].h) + '] : ', 'float')
 				if h == 0.0:
 					h = self.hCalc()
 				else:
 					h = h or self.list[which].h
 				self.list[which].h = h
-				
+
 				amount = menu('Amount [' + str(self.list[which].amount) + '] : ', 'float')
 				amount = amount or self.list[which].amount
 				self.list[which].amount = amount
@@ -108,7 +108,7 @@ class Entries_Class(object):
 					return
 
 				which = int(which) - len(self.list)
-				
+
 				title = menu('Title [' + self.mods[which].title + '] : ')
 				title = title or self.mods[which].title
 				self.mods[which].title = title
@@ -126,7 +126,7 @@ class Entries_Class(object):
 
 				time = menu('Time [' + self.mods[which].getTime_status() + '] : ', 'bool')
 				self.mods[which].time = time
-	
+
 	def add(self, what='entry', title='Music', h=1.6, amount=1, multi=0.2, entries=[], time=True):
 		if what == 'entry':
 			self.list.append( self.Single_Entry_Class(title=title, h=h, amount=amount) )
@@ -146,7 +146,7 @@ class Entries_Class(object):
 		if what == 'entry':
 			title = menu('Title [Music] : ')
 			title = title or 'Music'
-			
+
 			h = menu('H / Amount [1.6] : ', 'float')
 			if h == 0.0:
 				h = self.hCalc()
@@ -155,12 +155,12 @@ class Entries_Class(object):
 
 			amount = menu('Amount [1] : ', 'float')
 			amount = amount or 1
-			
+
 			self.add(what=what, title=title, h=h, amount=amount)
 		elif what == 'mod':
 			title = menu('Title [Exclusive] : ')
 			title = title or 'Exclusive'
-			
+
 			multi = menu('Multiplicator [3.0] : ', 'float')
 			multi = multi or 3
 
@@ -171,7 +171,7 @@ class Entries_Class(object):
 				entries = []
 
 			time = menu('Time [False] : ', 'bool')
-			
+
 			self.add(what=what, title=title, multi=multi, entries=entries, time=time)
 
 	def index_to_entries(self, index, which):
@@ -207,7 +207,7 @@ class Entries_Class(object):
 		hours = str(hours) if hours > 9 else '0' + str(hours)
 		minutes = str(minutes) if minutes > 9 else '0' + str(minutes)
 		return hours + ':' + minutes if floaty > 0.0 else '*'
-	
+
 	def show_as_table(self, just_show=False, head=['ID', 'Title', 'Amount', 'H', 'Price']):
 		show = []
 
@@ -227,7 +227,7 @@ class Entries_Class(object):
 				show.append( [ '', '', '', '', str( round(self.sum()[1] / self.sum()[0], 2) ) + ' E/h' ])
 		print tabulate(show, head)
 		print
-		
+
 	def wage_select(self):
 		print 'Actual wage: ' + str(self.Wage)
 		print '(a) Pro [' + str(self.Wage_Pro) + ']'
@@ -301,7 +301,6 @@ class Entries_Class(object):
 # functions only
 
 def cls():
-	print
 	print
 	print
 	print '#' * 50
@@ -396,14 +395,16 @@ def preset_choser(what, preset, title=''):
 Entries = Entries_Class()
 user = ''
 
+print
+print 'Preis terminal calculation'
 
 while user != 'exit' and user != 'e':
-	
+
 	cls()
 	Entries.show_as_table()
 	user = menu()
 
-	
+
 	# input is a command / string
 	user = user.lower()
 
@@ -441,13 +442,13 @@ while user != 'exit' and user != 'e':
 	elif user == 'wage' or user == 'w':
 		print
 		Entries.wage_select()
-	
+
 	# testing
 	elif user == 'test' or user == 't':
 		print uuid.uuid1()
 		Enter()
 
-	
+
 	# input refers to an ID
 	else:
 		try:
@@ -457,7 +458,7 @@ while user != 'exit' and user != 'e':
 			if user < Entries.count() and user >= 0:
 				print
 				Entries.edit(user)
-		
+
 		except Exception, e:
 			pass
 

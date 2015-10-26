@@ -84,7 +84,7 @@ class times_class(object):
 		else:
 			print 'No file found, sorry!'
 			exit()
-		
+
 		if type(self.csv_file) is list:
 			out = []
 			for x in self.csv_file:
@@ -169,7 +169,7 @@ class times_class(object):
 					out[x[row_task]] = c
 		return out
 
-	
+
 	def getProjects(self, client='*'):
 		out = {}
 		for c, x in enumerate(self.var):
@@ -185,7 +185,7 @@ class times_class(object):
 			if x[row_project_xtra1] not in out:
 				out[x[row_project_xtra1]] = c
 		return out
-	
+
 
 	def show(self, what):
 		if what == 'clients':
@@ -239,7 +239,7 @@ class times_class(object):
 					pass
 			if len(date) < 5:
 				self.filt['to'] = datetime.datetime(datetime.MAXYEAR, 12, 31)
-	
+
 
 	def filter_menu(self):
 		clients_txt = 'ALL' if len(self.filt['clients']) == 0 else ', '.join(self.filt['clients'])
@@ -418,7 +418,7 @@ class times_class(object):
 		s.append( return_time(out[2]) )
 		out[1].append( s )
 		return out
-	
+
 
 	def table(self):
 		print
@@ -508,7 +508,7 @@ print 'h / help for help'
 while run:
 	print
 	user = raw_input('> ')
-	
+
 	# debug
 	if user == 'deb':
 		print 'Filter tasks:', times.filt['tasks']
