@@ -360,10 +360,16 @@ def preset_choser(what, preset, title=''):
 	print
 	if preset.has_key('h'):
 		if what == 'entry':
+			title_tmp = menu('Tite [' + title + ']: ')
+			if title_tmp:
+				title = title_tmp
 			amount = menu('Amount: ', 'float')
 			amount = amount or 1.0
 			Entries.add(what='entry', title=title, h=float(preset['h']), amount=amount)
 		elif what == 'mod':
+			title_tmp = menu('Tite [' + title + ']: ')
+			if title_tmp:
+				title = title_tmp
 			entries = menu('Entries: ', 'tuple')
 			if entries:
 				entries = Entries.index_to_entries(entries, len(Entries.mods))
