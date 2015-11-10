@@ -134,8 +134,8 @@ class Entries_Class(object):
 			self.mods.append( self.Single_Mod_Class(title=title, multi=multi, entries=entries, time=time) )
 
 	def hCalc(self):
-		h_unit = menu('-- H / unit [0.3] : ', 'float')
-		h_unit = h_unit or 0.3
+		h_unit = menu('-- H / unit [0.4] : ', 'float')
+		h_unit = h_unit or 0.4
 		units = menu('-- units [1] : ', 'float')
 		units = units or 1.0
 		out = h_unit * units
