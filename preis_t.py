@@ -1,6 +1,6 @@
 # coding=utf-8
 
-import os, sys, uuid, imp
+import os, sys, uuid, imp, pickle
 from tabulate import tabulate
 
 
@@ -59,7 +59,79 @@ CL_E = configuration.CL_E
 
 
 
-# presets
+# functions
+
+loaded_project = 'new project'
+
+def LoadObject(file):
+	with open(file, 'r') as f:
+		return pickle.load(f)
+
+
+def Loader():
+	global loaded_project
+
+	if os.path.isdir(path_to_project + '/projects'):
+		all_in_dir = os.listdir(path_to_project + '/projects')
+		project_files = []
+		project_names = []
+		for x in all_in_dir:
+			if '.preis_t' in x:
+				project_files.append( path_to_project + '/projects/' + x )
+				project_names.append( x.replace('.preis_t', '').replace('_', ' ') )
+		if len(project_files) > 0:
+			print CL_TXT + 'Projects:' + CL_E
+			print
+			for y, x in enumerate(project_names):
+				print CL_TXT + '(' + str(y) + ') ' + x + CL_E
+			print
+			user = raw_input(CL_TXT + 'Chose project [' + CL_DEF + 'none' + CL_TXT + ']: ' + CL_E)
+			if user:
+				Saver = LoadObject( project_files[int(user)] )
+				Entries.list = Saver[0]
+				Entries.mods = Saver[1]
+				Entries.Wage = Saver[2]
+				loaded_project = project_names[int(user)]
+		else:
+			print CL_INF + 'No projects exists.' + CL_E
+			print
+	else:
+		print CL_INF + 'No projects exists.' + CL_E
+		print
+
+
+def SaveObject(obj, file):
+	with open(file, 'wb') as f:
+		pickle.dump(obj, f)
+
+
+def Saver(obj):
+	global loaded_project
+
+	user = raw_input( CL_TXT + 'Project name or \'.\' to cancel [' + CL_DEF + loaded_project + CL_TXT + ']: ' + CL_E)
+	if not user == '.':
+		if not user:
+			user = loaded_project
+		loaded_project_tmp = user
+		user = user.replace(' ', '_')
+		if not os.path.isdir(path_to_project + '/projects'):
+			os.makedirs(path_to_project + '/projects')
+		file_name = path_to_project + '/projects/' + user + '.preis_t'
+		write_it = False
+		if os.path.isfile(file_name):
+			user2 = raw_input( CL_INF + 'Overwrite? [' + CL_DEF + 'no' + CL_INF + ']: ' + CL_E)
+			if user2 == 'y' or user2 == 'yes':
+				write_it = True
+		else:
+			write_it = True
+		if write_it:
+			Saver = []
+			Saver.append( obj.list )
+			Saver.append( obj.mods )
+			Saver.append( obj.Wage )
+			SaveObject(Saver, file_name)
+			loaded_project = loaded_project_tmp
+
 
 def dict_merge(a, b):
 	'''recursively merges dict's. not just simple a['key'] = b['key'], if
@@ -76,11 +148,13 @@ def dict_merge(a, b):
 			result[k] = v
 	return result
 
+
 def array_of_paths_to_dict(array):
 	out = {}
 	for i in array:
 		out = dict_merge(out, reduce(lambda x, y: {y: x}, reversed(i)) )
 	return out
+
 
 def updateDict(the_dict, the_array):
 	if type(the_array) is list:
@@ -89,6 +163,97 @@ def updateDict(the_dict, the_array):
 			updateDict(the_dict, the_array[1:])
 		elif len(the_array) == 2:
 			the_dict[the_array[0]] = the_array[1]
+
+
+def cls():
+	print
+	print CL_INF + '#' * 50 + CL_E
+	print
+
+
+def menu(txt=CL_TXT + '# ' + CL_E, typ='str'):
+	out = raw_input(txt)
+	if out:
+		if typ == 'str':
+			return out
+		elif typ == 'int':
+			try:
+				return int(out)
+			except ValueError:
+				return 0
+		elif typ == 'float':
+			try:
+				if '*' in out:
+					calc = out.split('*')
+					for x in xrange(0,len(calc)):
+						calc[x] = calc[x].replace(',', '.')
+						try:
+							calc[x] = float(calc[x])
+						except Exception, e:
+							calc[x] = 1.0
+					out = 1.0
+					for x in calc:
+						out = out*x
+					return out
+				else:
+					return float(out.replace(',', '.'))
+			except Exception, e:
+				return 0.0
+		elif typ == 'tuple':
+			try:
+				return tuple(out.split(','))
+			except Exception, e:
+				return ()
+		elif typ == 'bool':
+			try:
+				if out == '1' or out.lower() == 'true':
+					return True
+				else:
+					return False
+			except Exception, e:
+				return False
+	else:
+		return out
+
+def preset_choser(what, preset, title=''):
+	print
+	if preset.has_key('h'):
+		if what == 'entry':
+			title_tmp = menu(CL_TXT + 'Tite [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
+			if title_tmp:
+				title = title_tmp
+			amount = menu(CL_TXT + 'Amount: ' + CL_E, 'float')
+			amount = amount or 1.0
+			Entries.add(what='entry', title=title, h=float(preset['h']), amount=amount)
+		elif what == 'mod':
+			title_tmp = menu(CL_TXT + 'Tite [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
+			if title_tmp:
+				title = title_tmp
+			entries = menu(CL_TXT + 'Entries: ' + CL_E, 'tuple')
+			if entries:
+				entries = Entries.index_to_entries(entries, len(Entries.mods))
+			else:
+				entries = []
+			Entries.add(what='mod', title=title, multi=float(preset['h']), time=bool(preset['t']), entries=entries)
+	else:
+		i = 0
+		c = []
+		t = []
+		print CL_TXT + '(' + str(i) + ') _Edit_' + CL_E
+		c.append(0)
+		for x in sorted(preset):
+			i += 1
+			print CL_TXT + '(' + str(i) + ') ' + x + CL_E
+			c.append(x)
+		chose = menu(CL_TXT + 'Preset: ' + CL_E, 'int')
+		next_title_pre = '' if title == '' else title + ' > '
+		if chose == 0 or not chose:
+			Entries.add_edit(what)
+		else:
+			preset_choser(what, preset[c[chose]], next_title_pre + c[chose])
+
+
+# presets
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -102,7 +267,6 @@ if os.path.isfile(cur_dir + '/presets.preis_presets'):
 		myfile.close()
 
 		presets = array_of_paths_to_dict(pre_presets)
-
 
 
 
@@ -177,9 +341,9 @@ class Entries_Class(object):
 
 	def add(self, what='entry', title='Music', h=1.6, amount=1, multi=0.2, entries=[], time=True):
 		if what == 'entry':
-			self.list.append( self.Single_Entry_Class(title=title, h=h, amount=amount) )
+			self.list.append( Single_Entry_Class(title=title, h=h, amount=amount) )
 		elif what == 'mod':
-			self.mods.append( self.Single_Mod_Class(title=title, multi=multi, entries=entries, time=time) )
+			self.mods.append( Single_Mod_Class(title=title, multi=multi, entries=entries, time=time) )
 
 	def hCalc(self):
 		h_unit = menu(CL_TXT + '-- H / unit [' + CL_DEF + '0.4' + CL_TXT + '] : ' + CL_E, 'float')
@@ -297,143 +461,55 @@ class Entries_Class(object):
 			except Exception, e:
 				pass
 
-	class Single_Entry_Class(object):
-		def __init__(self, title='Music', h=1.6, amount=1):
-			self.title = title
-			self.h = h
-			self.amount = amount
-			self.id = str(uuid.uuid1())
 
-		def getTime(self):
-			return round(self.amount * self.h, 2)
+class Single_Entry_Class(object):
+	def __init__(self, title='Music', h=1.6, amount=1):
+		self.title = title
+		self.h = h
+		self.amount = amount
+		self.id = str(uuid.uuid1())
 
-		def getPrice(self, wage):
-			return round(self.getTime() * wage, 2)
+	def getTime(self):
+		return round(self.amount * self.h, 2)
 
-	class Single_Mod_Class(object):
-		def __init__(self, title='Exclusive', multi=3, time=False, entries=()):
-			self.title = title
-			self.multi = multi
-			self.time = time
-			self.entries = entries
-
-		def getTime_status(self):
-			if not self.time:
-				return 'False'
-			else:
-				return 'True'
-
-		def has_entry(self, list_entry):
-			if list_entry.id in self.entries:
-				return True
-			else:
-				return False
-
-		def getTime(self, list):
-			out = 0.0
-			for x in list:
-				if self.has_entry(x) and self.time:
-					out += x.getTime() * self.multi
-			return round(out, 2)
-
-		def getPrice(self, wage, list):
-			out = 0.0
-			for x in list:
-				if self.has_entry(x):
-					out += x.getPrice(wage) * self.multi
-			return round(out, 2)
+	def getPrice(self, wage):
+		return round(self.getTime() * wage, 2)
 
 
+class Single_Mod_Class(object):
+	def __init__(self, title='Exclusive', multi=3, time=False, entries=()):
+		self.title = title
+		self.multi = multi
+		self.time = time
+		self.entries = entries
 
-
-# functions only
-
-def cls():
-	print
-	print CL_INF + '#' * 50 + CL_E
-	print
-
-
-def menu(txt=CL_TXT + '# ' + CL_E, typ='str'):
-	out = raw_input(txt)
-	if out:
-		if typ == 'str':
-			return out
-		elif typ == 'int':
-			try:
-				return int(out)
-			except ValueError:
-				return 0
-		elif typ == 'float':
-			try:
-				if '*' in out:
-					calc = out.split('*')
-					for x in xrange(0,len(calc)):
-						calc[x] = calc[x].replace(',', '.')
-						try:
-							calc[x] = float(calc[x])
-						except Exception, e:
-							calc[x] = 1.0
-					out = 1.0
-					for x in calc:
-						out = out*x
-					return out
-				else:
-					return float(out.replace(',', '.'))
-			except Exception, e:
-				return 0.0
-		elif typ == 'tuple':
-			try:
-				return tuple(out.split(','))
-			except Exception, e:
-				return ()
-		elif typ == 'bool':
-			try:
-				if out == '1' or out.lower() == 'true':
-					return True
-				else:
-					return False
-			except Exception, e:
-				return False
-	else:
-		return out
-
-def preset_choser(what, preset, title=''):
-	print
-	if preset.has_key('h'):
-		if what == 'entry':
-			title_tmp = menu(CL_TXT + 'Tite [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
-			if title_tmp:
-				title = title_tmp
-			amount = menu(CL_TXT + 'Amount: ' + CL_E, 'float')
-			amount = amount or 1.0
-			Entries.add(what='entry', title=title, h=float(preset['h']), amount=amount)
-		elif what == 'mod':
-			title_tmp = menu(CL_TXT + 'Tite [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
-			if title_tmp:
-				title = title_tmp
-			entries = menu(CL_TXT + 'Entries: ' + CL_E, 'tuple')
-			if entries:
-				entries = Entries.index_to_entries(entries, len(Entries.mods))
-			else:
-				entries = []
-			Entries.add(what='mod', title=title, multi=float(preset['h']), time=bool(preset['t']), entries=entries)
-	else:
-		i = 0
-		c = []
-		t = []
-		print CL_TXT + '(' + str(i) + ') _Edit_' + CL_E
-		c.append(0)
-		for x in sorted(preset):
-			i += 1
-			print CL_TXT + '(' + str(i) + ') ' + x + CL_E
-			c.append(x)
-		chose = menu(CL_TXT + 'Preset: ' + CL_E, 'int')
-		next_title_pre = '' if title == '' else title + ' > '
-		if chose == 0 or not chose:
-			Entries.add_edit(what)
+	def getTime_status(self):
+		if not self.time:
+			return 'False'
 		else:
-			preset_choser(what, preset[c[chose]], next_title_pre + c[chose])
+			return 'True'
+
+	def has_entry(self, list_entry):
+		if list_entry.id in self.entries:
+			return True
+		else:
+			return False
+
+	def getTime(self, list):
+		out = 0.0
+		for x in list:
+			if self.has_entry(x) and self.time:
+				out += x.getTime() * self.multi
+		return round(out, 2)
+
+	def getPrice(self, wage, list):
+		out = 0.0
+		for x in list:
+			if self.has_entry(x):
+				out += x.getPrice(wage) * self.multi
+		return round(out, 2)
+
+
 
 
 
@@ -466,6 +542,8 @@ while user != 'exit' and user != 'e' and user != '.':
 			[CL_TXT + 'mod / m' + CL_E, CL_TXT + 'adds a new modulator' + CL_E],
 			[CL_TXT + 'new / n' + CL_E, CL_TXT + 'creates a new project immediately' + CL_E],
 			[CL_TXT + 'wage / w' + CL_E, CL_TXT + 'chose the wage' + CL_E],
+			[CL_TXT + 'save / s' + CL_E, CL_TXT + 'saves the project' + CL_E],
+			[CL_TXT + 'load / l' + CL_E, CL_TXT + 'loads the project' + CL_E],
 			[CL_TXT + 'help / h' + CL_E, CL_TXT + 'this help text' + CL_E],
 			[CL_TXT + 'exit / e / .' + CL_E, CL_TXT + 'end the program' + CL_E]
 			]
@@ -490,6 +568,16 @@ while user != 'exit' and user != 'e' and user != '.':
 	elif user == 'wage' or user == 'w':
 		print
 		Entries.wage_select()
+
+	# save the project
+	elif user == 'save' or user == 's':
+		print
+		Saver(Entries)
+
+	# load the project
+	elif user == 'load' or user == 'l':
+		print
+		Loader()
 
 	# testing
 	elif user == 'test' or user == 't':
