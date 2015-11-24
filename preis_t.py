@@ -256,7 +256,7 @@ class Entries_Class(object):
 		minutes = str(minutes) if minutes > 9 else '0' + str(minutes)
 		return hours + ':' + minutes if floaty > 0.0 else '*'
 
-	def show_as_table(self, just_show=False, head=['ID', 'Title', 'Amount', 'H', 'Price']):
+	def show_as_table(self, just_show=False, head=[CL_TXT + 'ID' + CL_E, CL_TXT + 'Title' + CL_E, CL_TXT + 'Amount' + CL_E, CL_TXT + 'H' + CL_E, CL_TXT + 'Price' + CL_E]):
 		show = []
 
 		i = 0
@@ -446,7 +446,7 @@ user = ''
 print
 print CL_INF + 'Preis terminal calculation' + CL_E
 
-while user != 'exit' and user != 'e':
+while user != 'exit' and user != 'e' and user != '.':
 
 	cls()
 	Entries.show_as_table()
@@ -467,7 +467,7 @@ while user != 'exit' and user != 'e':
 			[CL_TXT + 'new / n' + CL_E, CL_TXT + 'creates a new project immediately' + CL_E],
 			[CL_TXT + 'wage / w' + CL_E, CL_TXT + 'chose the wage' + CL_E],
 			[CL_TXT + 'help / h' + CL_E, CL_TXT + 'this help text' + CL_E],
-			[CL_TXT + 'exit / e' + CL_E, CL_TXT + 'end the program' + CL_E]
+			[CL_TXT + 'exit / e / .' + CL_E, CL_TXT + 'end the program' + CL_E]
 			]
 		print tabulate(content, head)
 		print
