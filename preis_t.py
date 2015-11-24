@@ -7,12 +7,6 @@ from tabulate import tabulate
 
 arguments = sys.argv
 
-if len(arguments) > 1:
-	if os.path.isfile(os.getcwd() + '/' + arguments[1]):
-		os.system('python ' + os.getcwd() + '/gleeo_timetrack_analyzer.py ' + arguments[1])
-		exit()
-
-
 # presets
 
 def dict_merge(a, b):
