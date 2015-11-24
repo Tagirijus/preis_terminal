@@ -1,11 +1,63 @@
 # coding=utf-8
 
-import os, sys, uuid
+import os, sys, uuid, imp
 from tabulate import tabulate
 
-# gettig arguments and load analyzer or just the preis program
 
-arguments = sys.argv
+
+### ### ###
+### ### ### load configurarion file for variables
+### ### ###
+
+# !!!!! SET YOU INDIVIDUAL SETTINGS FILE HERE
+# !!!!! IT MUST BE SET UP LIKE THE 'preis_t-settings-default.py' FILE
+####
+###
+#
+
+SETTINGS_FILE = 'preis_t-settings.py'
+
+#
+###
+####
+# !!!!!
+# !!!!!
+
+# get the actual path to the python script
+path_to_project = os.path.dirname(os.path.realpath(__file__))
+
+
+# check if user set an individual settings file, or load default otherwise
+
+if os.path.isfile(path_to_project + '/' + SETTINGS_FILE):
+	configuration = imp.load_source('preis_t-settings', path_to_project + '/' + SETTINGS_FILE)
+else:
+	if os.path.isfile(path_to_project + '/preis_t-settings-default.py'):
+		configuration = imp.load_source('preis_t-settings', path_to_project + '/preis_t-settings-default.py')
+	else:
+		print 'No settings file found.'
+		exit()
+
+
+# getting the variables from the settings file - don't change the values here!
+
+colorize = configuration.colorize
+
+CL_TXT = configuration.CL_TXT
+CL_INF = configuration.CL_INF
+CL_DEF = configuration.CL_DEF
+CL_DIM = configuration.CL_DIM
+CL_OUT = configuration.CL_OUT
+CL_E = configuration.CL_E
+
+### ### ###
+### ### ### load configurarion file for variables - END
+### ### ###
+
+
+
+
+
 
 # presets
 
@@ -74,53 +126,53 @@ class Entries_Class(object):
 			# it's an entry
 			if which < len(self.list):
 
-				delete = menu('Delete [no]: ')
+				delete = menu(CL_TXT + 'Delete [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E)
 				if delete == 'yes' or delete == 'y':
 					self.list.pop(which)
 					return
 
 				which = int(which)
 
-				title = menu('Title [' + self.list[which].title + '] : ')
+				title = menu(CL_TXT + 'Title [' + CL_DEF + self.list[which].title + CL_TXT + '] : ' + CL_E)
 				title = title or self.list[which].title
 				self.list[which].title = title
 
-				h = menu('H / Amount [' + str(self.list[which].h) + '] : ', 'float')
+				h = menu(CL_TXT + 'H / Amount [' + CL_DEF + str(self.list[which].h) + CL_TXT + '] : ' + CL_E, 'float')
 				if h == 0.0:
 					h = self.hCalc()
 				else:
 					h = h or self.list[which].h
 				self.list[which].h = h
 
-				amount = menu('Amount [' + str(self.list[which].amount) + '] : ', 'float')
+				amount = menu(CL_TXT + 'Amount [' + CL_DEF + str(self.list[which].amount) + CL_TXT + '] : ' + CL_E, 'float')
 				amount = amount or self.list[which].amount
 				self.list[which].amount = amount
 
 			# it's a modulator
 			else:
-				delete = menu('Delete [no]: ')
+				delete = menu(CL_TXT + 'Delete [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E)
 				if delete == 'yes' or delete == 'y':
 					self.mods.pop(which - len(self.list))
 					return
 
 				which = int(which) - len(self.list)
 
-				title = menu('Title [' + self.mods[which].title + '] : ')
+				title = menu(CL_TXT + 'Title ['  + CL_DEF + self.mods[which].title + CL_TXT + '] : ' + CL_E)
 				title = title or self.mods[which].title
 				self.mods[which].title = title
 
-				multi = menu('Multiplicator [' + str(self.mods[which].multi) + '] : ', 'float')
+				multi = menu(CL_TXT + 'Multiplicator [' + CL_DEF + str(self.mods[which].multi) + CL_TXT + '] : ' + CL_E, 'float')
 				multi = multi or self.mods[which].multi
 				self.mods[which].multi = multi
 
-				entries = menu('Entries [' + self.entries_to_index(self.mods[which].entries) + '] : ', 'tuple')
+				entries = menu(CL_TXT + 'Entries [' + CL_DEF + self.entries_to_index(self.mods[which].entries) + CL_TXT + '] : ' + CL_E, 'tuple')
 				if entries:
 					entries = self.index_to_entries(entries, len(self.mods))
 				else:
 					entries = self.mods[which].entries
 				self.mods[which].entries = entries
 
-				time = menu('Time [' + self.mods[which].getTime_status() + '] : ', 'bool')
+				time = menu(CL_TXT + 'Time [' + CL_DEF + self.mods[which].getTime_status() + CL_TXT + '] : ' + CL_E, 'bool')
 				self.mods[which].time = time
 
 	def add(self, what='entry', title='Music', h=1.6, amount=1, multi=0.2, entries=[], time=True):
@@ -130,43 +182,43 @@ class Entries_Class(object):
 			self.mods.append( self.Single_Mod_Class(title=title, multi=multi, entries=entries, time=time) )
 
 	def hCalc(self):
-		h_unit = menu('-- H / unit [0.4] : ', 'float')
+		h_unit = menu(CL_TXT + '-- H / unit [' + CL_DEF + '0.4' + CL_TXT + '] : ' + CL_E, 'float')
 		h_unit = h_unit or 0.4
-		units = menu('-- units [1] : ', 'float')
+		units = menu(CL_TXT + '-- units [' + CL_DEF + '1' + CL_TXT + '] : ' + CL_E, 'float')
 		units = units or 1.0
 		out = h_unit * units
-		print '-- H / Amount :', str(out)
+		print CL_TXT + '-- H / Amount : ' + CL_DEF + str(out) + CL_E
 		return out
 
 	def add_edit(self, what):
 		if what == 'entry':
-			title = menu('Title [Music] : ')
+			title = menu(CL_TXT + 'Title [' + CL_DEF + 'Music' + CL_TXT + '] : ' + CL_E)
 			title = title or 'Music'
 
-			h = menu('H / Amount [1.6] : ', 'float')
+			h = menu(CL_TXT + 'H / Amount [' + CL_DEF + '1.6' + CL_TXT + '] : ' + CL_E, 'float')
 			if h == 0.0:
 				h = self.hCalc()
 			else:
 				h = h or 1.6
 
-			amount = menu('Amount [1] : ', 'float')
+			amount = menu(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + '] : ' + CL_E, 'float')
 			amount = amount or 1
 
 			self.add(what=what, title=title, h=h, amount=amount)
 		elif what == 'mod':
-			title = menu('Title [Exclusive] : ')
+			title = menu(CL_TXT + 'Title [' + CL_DEF + 'Exclusive' + CL_TXT + '] : ' + CL_E)
 			title = title or 'Exclusive'
 
-			multi = menu('Multiplicator [3.0] : ', 'float')
+			multi = menu(CL_TXT + 'Multiplicator [' + CL_DEF + '3.0' + CL_TXT + '] : ' + CL_E, 'float')
 			multi = multi or 3
 
-			entries = menu('Entries [] : ', 'tuple')
+			entries = menu(CL_TXT + 'Entries [] : ' + CL_E, 'tuple')
 			if entries:
 				entries = self.index_to_entries(entries, len(self.mods))
 			else:
 				entries = []
 
-			time = menu('Time [False] : ', 'bool')
+			time = menu(CL_TXT + 'Time [' + CL_DEF + 'False' + CL_TXT + '] : ' + CL_E, 'bool')
 
 			self.add(what=what, title=title, multi=multi, entries=entries, time=time)
 
@@ -209,27 +261,27 @@ class Entries_Class(object):
 
 		i = 0
 		for x in self.list:
-			show.append( [i, x.title, x.amount, self.return_time( x.getTime() ), x.getPrice(self.Wage)] )
+			show.append( [CL_OUT + str(i) + CL_E, CL_OUT + x.title + CL_E, CL_OUT + str(x.amount) + CL_E, CL_OUT + str(self.return_time( x.getTime() )) + CL_E, CL_OUT + str(x.getPrice(self.Wage)) + CL_E] )
 			i += 1
 		for x in self.mods:
-			show.append( [i, x.title, '*', self.return_time( x.getTime(self.list) ), x.getPrice(self.Wage, self.list)] )
+			show.append( [CL_OUT + str(i) + CL_E, CL_OUT + x.title + CL_E, CL_OUT + '*' + CL_E, CL_OUT + str(self.return_time( x.getTime(self.list) )) + CL_E, CL_OUT + str(x.getPrice(self.Wage, self.list)) + CL_E] )
 			i += 1
 		if not just_show:
-			show.append( ['a', '[New entry]', '...', '?', '?'] )
-			show.append( ['m', '[New mod]', '...', '?', '?'] )
-			show.append( [ '--', '----', '----', '----', '----' ])
-			show.append( [ '', '', '', self.return_time( self.sum()[0] ), self.sum()[1]])
+			show.append( [CL_TXT + 'a' + CL_E, CL_TXT + '[New entry]' + CL_E, CL_TXT + '...' + CL_E, CL_TXT + '?' + CL_E, CL_TXT + '?' + CL_E] )
+			show.append( [CL_TXT + 'm' + CL_E, CL_TXT + '[New mod]' + CL_E, CL_TXT + '...' + CL_E, CL_TXT + '?' + CL_E, CL_TXT + '?' + CL_E] )
+			show.append( [CL_TXT + '--' + CL_E, CL_TXT + '----' + CL_E, CL_TXT + '----' + CL_E, CL_TXT + '----' + CL_E, CL_TXT + '----' + CL_E])
+			show.append( [ '', '', '', CL_OUT + str(self.return_time( self.sum()[0] )) + CL_E, CL_OUT + str(self.sum()[1]) + CL_E])
 			if self.sum()[0] > 0:
-				show.append( [ '', '', '', '', str( round(self.sum()[1] / self.sum()[0], 2) ) + ' E/h' ])
+				show.append( [ '', '', '', '', CL_OUT + str( round(self.sum()[1] / self.sum()[0], 2) ) + ' E/h' + CL_E ])
 		print tabulate(show, head)
 		print
 
 	def wage_select(self):
-		print 'Actual wage: ' + str(self.Wage)
-		print '(a) Pro [' + str(self.Wage_Pro) + ']'
-		print '(b) Edu [' + str(self.Wage_Edu) + ']'
-		print '(c) Low [' + str(self.Wage_Low) + ']'
-		print '(any number) Individual wage'
+		print CL_TXT + 'Actual wage: ' + CL_DEF + str(self.Wage) + CL_E
+		print CL_TXT + '(a) Pro [' + CL_DEF + str(self.Wage_Pro) + CL_TXT + ']' + CL_E
+		print CL_TXT + '(b) Edu [' + CL_DEF + str(self.Wage_Edu) + CL_TXT +']' + CL_E
+		print CL_TXT + '(c) Low [' + CL_DEF + str(self.Wage_Low) + CL_TXT + ']' + CL_E
+		print CL_TXT + '(any number) Individual wage' + CL_E
 		wager = menu()
 		if wager == 'a':
 			self.Wage = self.Wage_Pro
@@ -298,17 +350,11 @@ class Entries_Class(object):
 
 def cls():
 	print
+	print CL_INF + '#' * 50 + CL_E
 	print
-	print '#' * 50
-	print
 
 
-def Enter():
-	print
-	raw_input('Press enter ...')
-
-
-def menu(txt='# ', typ='str'):
+def menu(txt=CL_TXT + '# ' + CL_E, typ='str'):
 	out = raw_input(txt)
 	if out:
 		if typ == 'str':
@@ -356,17 +402,17 @@ def preset_choser(what, preset, title=''):
 	print
 	if preset.has_key('h'):
 		if what == 'entry':
-			title_tmp = menu('Tite [' + title + ']: ')
+			title_tmp = menu(CL_TXT + 'Tite [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
 			if title_tmp:
 				title = title_tmp
-			amount = menu('Amount: ', 'float')
+			amount = menu(CL_TXT + 'Amount: ' + CL_E, 'float')
 			amount = amount or 1.0
 			Entries.add(what='entry', title=title, h=float(preset['h']), amount=amount)
 		elif what == 'mod':
-			title_tmp = menu('Tite [' + title + ']: ')
+			title_tmp = menu(CL_TXT + 'Tite [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
 			if title_tmp:
 				title = title_tmp
-			entries = menu('Entries: ', 'tuple')
+			entries = menu(CL_TXT + 'Entries: ' + CL_E, 'tuple')
 			if entries:
 				entries = Entries.index_to_entries(entries, len(Entries.mods))
 			else:
@@ -376,13 +422,13 @@ def preset_choser(what, preset, title=''):
 		i = 0
 		c = []
 		t = []
-		print '(' + str(i) + ') _Edit_'
+		print CL_TXT + '(' + str(i) + ') _Edit_' + CL_E
 		c.append(0)
 		for x in sorted(preset):
 			i += 1
-			print '(' + str(i) + ') ' + x
+			print CL_TXT + '(' + str(i) + ') ' + x + CL_E
 			c.append(x)
-		chose = menu('Preset: ', 'int')
+		chose = menu(CL_TXT + 'Preset: ' + CL_E, 'int')
 		next_title_pre = '' if title == '' else title + ' > '
 		if chose == 0 or not chose:
 			Entries.add_edit(what)
@@ -398,7 +444,7 @@ Entries = Entries_Class()
 user = ''
 
 print
-print 'Preis terminal calculation'
+print CL_INF + 'Preis terminal calculation' + CL_E
 
 while user != 'exit' and user != 'e':
 
@@ -413,18 +459,18 @@ while user != 'exit' and user != 'e':
 	# show the help
 	if user == 'help' or user == 'h':
 		print
-		head = ['command', 'result']
+		head = [CL_TXT + 'command' + CL_E, CL_TXT + 'result' + CL_E]
 		content = [
-			['0-99', 'edit the entry / mod or chose a number higher to create a new one'],
-			['entry / a', 'adds a new entry'],
-			['mod / m', 'adds a new modulator'],
-			['new / n', 'creates a new project immediately'],
-			['wage / w', 'chose the wage'],
-			['help / h', 'this help text'],
-			['exit / e', 'end the program']
+			[CL_TXT + '0-99' + CL_E, CL_TXT + 'edit the entry / mod or chose a number higher to create a new one' + CL_E],
+			[CL_TXT + 'entry / a' + CL_E, CL_TXT + 'adds a new entry' + CL_E],
+			[CL_TXT + 'mod / m' + CL_E, CL_TXT + 'adds a new modulator' + CL_E],
+			[CL_TXT + 'new / n' + CL_E, CL_TXT + 'creates a new project immediately' + CL_E],
+			[CL_TXT + 'wage / w' + CL_E, CL_TXT + 'chose the wage' + CL_E],
+			[CL_TXT + 'help / h' + CL_E, CL_TXT + 'this help text' + CL_E],
+			[CL_TXT + 'exit / e' + CL_E, CL_TXT + 'end the program' + CL_E]
 			]
 		print tabulate(content, head)
-		Enter()
+		print
 
 	# new  entry
 	elif user == 'entry' or user == 'a':
@@ -448,7 +494,7 @@ while user != 'exit' and user != 'e':
 	# testing
 	elif user == 'test' or user == 't':
 		print uuid.uuid1()
-		Enter()
+		print
 
 
 	# input refers to an ID
