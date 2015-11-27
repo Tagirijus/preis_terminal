@@ -585,16 +585,10 @@ class Entries_Class(object):
 
 					entries = []
 					for x in self.list:
-						entries.append( [unicode(x.title, 'utf-8'), unicode(str(x.amount), 'utf-8'), unicode(str(x.getPrice(self.Wage)), 'utf-8') ] )
-						# entries.append( {'title': unicode(x.title, 'utf-8')} )
-						# entries.append( {'amount': unicode(str(x.amount), 'utf-8')} )
-						# entries.append( {'price': unicode(str(x.getPrice(self.Wage)), 'utf-8')} )
+						entries.append( [unicode(x.title, 'utf-8'), unicode(str(x.amount), 'utf-8'), unicode(str(x.getPrice(self.Wage)), 'utf-8'), unicode(x.comment or '-', 'utf-8') ] )
 
 					for x in self.mods:
-						entries.append( [unicode(x.title, 'utf-8'), unicode('*', 'utf-8'), unicode(str(x.getPrice(self.Wage, self.list)), 'utf-8') ] )
-						# entries.append( {'title': unicode(x.title, 'utf-8')} )
-						# entries.append( {'amount': unicode('*', 'utf-8')} )
-						# entries.append( {'price': unicode(str(x.getPrice(self.Wage, self.list)), 'utf-8')} )
+						entries.append( [unicode(x.title, 'utf-8'), unicode('*', 'utf-8'), unicode(str(x.getPrice(self.Wage, self.list)), 'utf-8'), unicode(x.comment or '-', 'utf-8') ] )
 
 					# final endering
 					engine = secretary.Renderer()
