@@ -58,20 +58,6 @@ def_project_offer_filename 	= configuration.def_project_offer_filename
 offer_template_filename	 	= configuration.offer_template_filename
 
 date_format		 	= configuration.date_format
-placeholde_date 	= configuration.placeholde_date
-
-placeholde_title 	= configuration.placeholde_title
-placeholde_name 	= configuration.placeholde_name
-placeholde_address 	= configuration.placeholde_address
-placeholde_city 	= configuration.placeholde_city
-
-placeholde_project 	= configuration.placeholde_project
-
-placeholde_option 	= configuration.placeholde_option
-placeholde_task 	= configuration.placeholde_task
-placeholde_amount 	= configuration.placeholde_amount
-placeholde_price 	= configuration.placeholde_price
-placeholde_SUM	 	= configuration.placeholde_SUM
 
 colorize = configuration.colorize
 

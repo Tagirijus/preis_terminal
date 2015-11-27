@@ -14,22 +14,8 @@ def_project_name		 	= 'Projekt X'
 def_project_offer_filename 	= 'Angebot_{YEAR}_-_{PROJECT_NAME}.odt'
 offer_template_filename		= path_to_project + '/template.odt'
 
-
 date_format			= '%d.%m.%Y'
-placeholde_date 	= '{DATE}'
 
-placeholde_title 	= '{TITLE}'
-placeholde_name 	= '{NAME}'
-placeholde_address 	= '{ADDRESS}'
-placeholde_city 	= '{CITY}'
-
-placeholde_project 	= '{PROJECT}'
-
-placeholde_option 	= '{OPTION}'
-placeholde_task 	= '{TASK}'
-placeholde_amount 	= '{AMOUNT}'
-placeholde_price 	= '{PRICE}'
-placeholde_SUM	 	= '{SUM}'
 
 # coor stuff
 
