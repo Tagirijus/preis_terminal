@@ -11,7 +11,7 @@ def_project_client_address 	= 'Straße 5b'
 def_project_client_city 	= '47209 Stadt'
 
 def_project_name		 	= 'Projekt X'
-def_project_offer_filename 	= 'Angebot_-_Projekt_X.odt'
+def_project_offer_filename 	= 'Angebot_{YEAR}_-_{PROJECT_NAME}.odt'
 offer_template_filename		= path_to_project + '/template.odt'
 
 

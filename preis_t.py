@@ -130,10 +130,16 @@ def Loader():
 			print
 			user = raw_input(CL_TXT + 'Chose project [' + CL_DEF + 'none' + CL_TXT + ']: ' + CL_E)
 			if user:
-				Saver = LoadObject( project_files[int(user)] )
-				Entries.list = Saver[0]
-				Entries.mods = Saver[1]
-				Entries.Wage = Saver[2]
+				Loader = LoadObject( project_files[int(user)] )
+				Entries.project_client_name = Loader[0]
+				Entries.project_client_address = Loader[1]
+				Entries.project_client_city = Loader[2]
+				Entries.project_name = Loader[3]
+				Entries.project_offer_filename = Loader[4]
+				Entries.project_client_title = Loader[5]
+				Entries.list = Loader[6]
+				Entries.mods = Loader[7]
+				Entries.Wage = Loader[8]
 				loaded_project = project_names[int(user)]
 		else:
 			print CL_INF + 'No projects exists.' + CL_E
@@ -169,6 +175,12 @@ def Saver(obj):
 			write_it = True
 		if write_it:
 			Saver = []
+			Saver.append( obj.project_client_name )
+			Saver.append( obj.project_client_address )
+			Saver.append( obj.project_client_city )
+			Saver.append( obj.project_name )
+			Saver.append( obj.project_offer_filename )
+			Saver.append( obj.project_client_title )
 			Saver.append( obj.list )
 			Saver.append( obj.mods )
 			Saver.append( obj.Wage )
@@ -529,6 +541,8 @@ class Entries_Class(object):
 				pass
 
 	def project_setup(self):
+		global loaded_project
+
 		print CL_TXT + 'Enter clients information:' + CL_E
 
 		user = menu(CL_TXT + 'Client title [' + CL_DEF + self.project_client_title + CL_TXT + '] : ' + CL_E)
@@ -550,7 +564,10 @@ class Entries_Class(object):
 		user = menu(CL_TXT + 'Project name [' + CL_DEF + self.project_name + CL_TXT + '] : ' + CL_E)
 		if user:
 			self.project_name = user
+			loaded_project = user
 
+
+		self.project_offer_filename = self.project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', self.project_name.replace(' ', '_'))
 		user = menu(CL_TXT + 'Offer output file [' + CL_DEF + self.project_offer_filename + CL_TXT + '] : ' + CL_E)
 		if user and check_file_exists(user):
 			self.project_offer_filename = user
@@ -559,6 +576,7 @@ class Entries_Class(object):
 
 	def export_to_odt(self):
 		if secretary_available:
+			self.project_offer_filename = self.project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', self.project_name.replace(' ', '_'))
 			user = menu(CL_TXT + 'Filename for export [' + CL_DEF + self.project_offer_filename + CL_TXT + '] : ' + CL_E)
 			if not user == '.':
 				if not user:
@@ -570,7 +588,38 @@ class Entries_Class(object):
 
 
 					# generate content for output
-					print CL_INF + 'Feature will be available soon ...' + CL_E
+					client = {}
+					client['title'] = unicode(self.project_client_title, 'utf-8')
+					client['name'] = unicode(self.project_client_name, 'utf-8')
+					client['address'] = unicode(self.project_client_address, 'utf-8')
+					client['city'] = unicode(self.project_client_city, 'utf-8')
+					client['project'] = unicode(self.project_name, 'utf-8')
+					client['date'] = unicode(datetime.datetime.now().strftime(date_format), 'utf-8')
+					client['sum'] = unicode(str(self.sum()[1]), 'utf-8')
+
+					entries = []
+					for x in self.list:
+						entries.append( [unicode(x.title, 'utf-8'), unicode(str(x.amount), 'utf-8'), unicode(str(x.getPrice(self.Wage)), 'utf-8') ] )
+						# entries.append( {'title': unicode(x.title, 'utf-8')} )
+						# entries.append( {'amount': unicode(str(x.amount), 'utf-8')} )
+						# entries.append( {'price': unicode(str(x.getPrice(self.Wage)), 'utf-8')} )
+
+					for x in self.mods:
+						entries.append( [unicode(x.title, 'utf-8'), unicode('*', 'utf-8'), unicode(str(x.getPrice(self.Wage, self.list)), 'utf-8') ] )
+						# entries.append( {'title': unicode(x.title, 'utf-8')} )
+						# entries.append( {'amount': unicode('*', 'utf-8')} )
+						# entries.append( {'price': unicode(str(x.getPrice(self.Wage, self.list)), 'utf-8')} )
+
+					# final endering
+					engine = secretary.Renderer()
+					result = engine.render(offer_template_filename, entries=entries, client=client)
+
+					output = open(self.project_offer_filename, 'wb')
+					output.write(result)
+					output.close()
+
+
+					print CL_TXT + 'Done!' + CL_E
 
 		else:
 			print 'No secretary-module was loaded. Use \'pip install secretary\' to install it.'
