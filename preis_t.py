@@ -1,7 +1,14 @@
 # coding=utf-8
 
-import os, sys, uuid, imp, pickle
+import os, sys, shutil, uuid, imp, pickle, datetime
 from tabulate import tabulate
+
+try:
+	import secretary
+	secretary_available = True
+except Exception, e:
+	print 'Export feature disabled. Need module \'secretary\'. Use \'pip install secretary\' for getting it.'
+	secretary_available = False
 
 
 
@@ -41,6 +48,31 @@ else:
 
 # getting the variables from the settings file - don't change the values here!
 
+def_project_client_title 	= configuration.def_project_client_title
+def_project_client_name 	= configuration.def_project_client_name
+def_project_client_address 	= configuration.def_project_client_address
+def_project_client_city 	= configuration.def_project_client_city
+
+def_project_name		 	= configuration.def_project_name
+def_project_offer_filename 	= configuration.def_project_offer_filename
+offer_template_filename	 	= configuration.offer_template_filename
+
+date_format		 	= configuration.date_format
+placeholde_date 	= configuration.placeholde_date
+
+placeholde_title 	= configuration.placeholde_title
+placeholde_name 	= configuration.placeholde_name
+placeholde_address 	= configuration.placeholde_address
+placeholde_city 	= configuration.placeholde_city
+
+placeholde_project 	= configuration.placeholde_project
+
+placeholde_option 	= configuration.placeholde_option
+placeholde_task 	= configuration.placeholde_task
+placeholde_amount 	= configuration.placeholde_amount
+placeholde_price 	= configuration.placeholde_price
+placeholde_SUM	 	= configuration.placeholde_SUM
+
 colorize = configuration.colorize
 
 CL_TXT = configuration.CL_TXT
@@ -61,7 +93,18 @@ CL_E = configuration.CL_E
 
 # functions
 
-loaded_project = 'new project'
+def check_file_exists(the_file):
+	if os.path.isfile(the_file):
+		user = menu( CL_INF + 'File already exists. Overwrite? [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E )
+		if user:
+			if user == 'y' or user == 'yes':
+				print CL_INF + 'File will be overwritten on export!' + CL_E
+				return True
+		return False
+	return True
+
+
+loaded_project = def_project_name
 
 def LoadObject(file):
 	with open(file, 'r') as f:
@@ -215,26 +258,32 @@ def menu(txt=CL_TXT + '# ' + CL_E, typ='str'):
 	else:
 		return out
 
-def preset_choser(what, preset, title=''):
+def preset_choser(what, preset, title='', comment=''):
 	print
 	if preset.has_key('h'):
 		if what == 'entry':
-			title_tmp = menu(CL_TXT + 'Tite [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
+			title_tmp = menu(CL_TXT + 'Title [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
 			if title_tmp:
 				title = title_tmp
+			comment_tmp = menu(CL_TXT + 'Comment [' + CL_DEF + comment + CL_TXT + ']: ' + CL_E)
+			if comment_tmp:
+				comment = comment_tmp
 			amount = menu(CL_TXT + 'Amount: ' + CL_E, 'float')
 			amount = amount or 1.0
-			Entries.add(what='entry', title=title, h=float(preset['h']), amount=amount)
+			Entries.add(what='entry', title=title, h=float(preset['h']), amount=amount, comment=comment)
 		elif what == 'mod':
-			title_tmp = menu(CL_TXT + 'Tite [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
+			title_tmp = menu(CL_TXT + 'Title [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
 			if title_tmp:
 				title = title_tmp
+			comment_tmp = menu(CL_TXT + 'Comment [' + CL_DEF + comment + CL_TXT + ']: ' + CL_E)
+			if comment_tmp:
+				comment = comment_tmp
 			entries = menu(CL_TXT + 'Entries: ' + CL_E, 'tuple')
 			if entries:
 				entries = Entries.index_to_entries(entries, len(Entries.mods))
 			else:
 				entries = []
-			Entries.add(what='mod', title=title, multi=float(preset['h']), time=bool(preset['t']), entries=entries)
+			Entries.add(what='mod', title=title, multi=float(preset['h']), time=bool(preset['t']), entries=entries, comment=comment)
 	else:
 		i = 0
 		c = []
@@ -274,6 +323,12 @@ if os.path.isfile(cur_dir + '/presets.preis_presets'):
 
 class Entries_Class(object):
 	def __init__(self):
+		self.project_client_title = def_project_client_title
+		self.project_client_name = def_project_client_name
+		self.project_client_address = def_project_client_address
+		self.project_client_city = def_project_client_city
+		self.project_name = def_project_name
+		self.project_offer_filename = def_project_offer_filename
 		self.list = []
 		self.mods = []
 		self.Wage = 40
@@ -301,6 +356,10 @@ class Entries_Class(object):
 				title = title or self.list[which].title
 				self.list[which].title = title
 
+				comment = menu(CL_TXT + 'Comment [' + CL_DEF + self.list[which].comment + CL_TXT + '] : ' + CL_E)
+				comment = comment or self.list[which].comment
+				self.list[which].comment = comment
+
 				h = menu(CL_TXT + 'H / Amount [' + CL_DEF + str(self.list[which].h) + CL_TXT + '] : ' + CL_E, 'float')
 				if h == 0.0:
 					h = self.hCalc()
@@ -325,6 +384,10 @@ class Entries_Class(object):
 				title = title or self.mods[which].title
 				self.mods[which].title = title
 
+				comment = menu(CL_TXT + 'Comment ['  + CL_DEF + self.mods[which].comment + CL_TXT + '] : ' + CL_E)
+				comment = comment or self.mods[which].comment
+				self.mods[which].comment = comment
+
 				multi = menu(CL_TXT + 'Multiplicator [' + CL_DEF + str(self.mods[which].multi) + CL_TXT + '] : ' + CL_E, 'float')
 				multi = multi or self.mods[which].multi
 				self.mods[which].multi = multi
@@ -339,11 +402,11 @@ class Entries_Class(object):
 				time = menu(CL_TXT + 'Time [' + CL_DEF + self.mods[which].getTime_status() + CL_TXT + '] : ' + CL_E, 'bool')
 				self.mods[which].time = time
 
-	def add(self, what='entry', title='Music', h=1.6, amount=1, multi=0.2, entries=[], time=True):
+	def add(self, what='entry', title='Music', h=1.6, amount=1, multi=0.2, entries=[], time=True, comment=''):
 		if what == 'entry':
-			self.list.append( Single_Entry_Class(title=title, h=h, amount=amount) )
+			self.list.append( Single_Entry_Class(title=title, h=h, amount=amount, comment=comment) )
 		elif what == 'mod':
-			self.mods.append( Single_Mod_Class(title=title, multi=multi, entries=entries, time=time) )
+			self.mods.append( Single_Mod_Class(title=title, multi=multi, entries=entries, time=time, comment=comment) )
 
 	def hCalc(self):
 		h_unit = menu(CL_TXT + '-- H / unit [' + CL_DEF + '0.4' + CL_TXT + '] : ' + CL_E, 'float')
@@ -359,6 +422,8 @@ class Entries_Class(object):
 			title = menu(CL_TXT + 'Title [' + CL_DEF + 'Music' + CL_TXT + '] : ' + CL_E)
 			title = title or 'Music'
 
+			comment = menu(CL_TXT + 'Comment [] : ' + CL_E)
+
 			h = menu(CL_TXT + 'H / Amount [' + CL_DEF + '1.6' + CL_TXT + '] : ' + CL_E, 'float')
 			if h == 0.0:
 				h = self.hCalc()
@@ -368,10 +433,12 @@ class Entries_Class(object):
 			amount = menu(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + '] : ' + CL_E, 'float')
 			amount = amount or 1
 
-			self.add(what=what, title=title, h=h, amount=amount)
+			self.add(what=what, title=title, h=h, amount=amount, comment=comment)
 		elif what == 'mod':
 			title = menu(CL_TXT + 'Title [' + CL_DEF + 'Exclusive' + CL_TXT + '] : ' + CL_E)
 			title = title or 'Exclusive'
+
+			comment = menu(CL_TXT + 'Comment [] : ' + CL_E)
 
 			multi = menu(CL_TXT + 'Multiplicator [' + CL_DEF + '3.0' + CL_TXT + '] : ' + CL_E, 'float')
 			multi = multi or 3
@@ -384,7 +451,7 @@ class Entries_Class(object):
 
 			time = menu(CL_TXT + 'Time [' + CL_DEF + 'False' + CL_TXT + '] : ' + CL_E, 'bool')
 
-			self.add(what=what, title=title, multi=multi, entries=entries, time=time)
+			self.add(what=what, title=title, multi=multi, entries=entries, time=time, comment=comment)
 
 	def index_to_entries(self, index, which):
 		out = []
@@ -425,10 +492,10 @@ class Entries_Class(object):
 
 		i = 0
 		for x in self.list:
-			show.append( [CL_OUT + str(i) + CL_E, CL_OUT + x.title + CL_E, CL_OUT + str(x.amount) + CL_E, CL_OUT + str(self.return_time( x.getTime() )) + CL_E, CL_OUT + str(x.getPrice(self.Wage)) + CL_E] )
+			show.append( [CL_OUT + str(i) + CL_E, CL_OUT + unicode(x.title, 'utf-8') + CL_E, CL_OUT + str(x.amount) + CL_E, CL_OUT + str(self.return_time( x.getTime() )) + CL_E, CL_OUT + str(x.getPrice(self.Wage)) + CL_E] )
 			i += 1
 		for x in self.mods:
-			show.append( [CL_OUT + str(i) + CL_E, CL_OUT + x.title + CL_E, CL_OUT + '*' + CL_E, CL_OUT + str(self.return_time( x.getTime(self.list) )) + CL_E, CL_OUT + str(x.getPrice(self.Wage, self.list)) + CL_E] )
+			show.append( [CL_OUT + str(i) + CL_E, CL_OUT + unicode(x.title, 'utf-8') + CL_E, CL_OUT + '*' + CL_E, CL_OUT + str(self.return_time( x.getTime(self.list) )) + CL_E, CL_OUT + str(x.getPrice(self.Wage, self.list)) + CL_E] )
 			i += 1
 		if not just_show:
 			show.append( [CL_TXT + 'a' + CL_E, CL_TXT + '[New entry]' + CL_E, CL_TXT + '...' + CL_E, CL_TXT + '?' + CL_E, CL_TXT + '?' + CL_E] )
@@ -461,10 +528,60 @@ class Entries_Class(object):
 			except Exception, e:
 				pass
 
+	def project_setup(self):
+		print CL_TXT + 'Enter clients information:' + CL_E
+
+		user = menu(CL_TXT + 'Client title [' + CL_DEF + self.project_client_title + CL_TXT + '] : ' + CL_E)
+		if user:
+			self.project_client_title = user
+
+		user = menu(CL_TXT + 'Client name [' + CL_DEF + self.project_client_name + CL_TXT + '] : ' + CL_E)
+		if user:
+			self.project_client_name = user
+
+		user = menu(CL_TXT + 'Client address [' + CL_DEF + self.project_client_address + CL_TXT + '] : ' + CL_E)
+		if user:
+			self.project_client_address = user
+
+		user = menu(CL_TXT + 'Client city [' + CL_DEF + self.project_client_city + CL_TXT + '] : ' + CL_E)
+		if user:
+			self.project_client_city = user
+
+		user = menu(CL_TXT + 'Project name [' + CL_DEF + self.project_name + CL_TXT + '] : ' + CL_E)
+		if user:
+			self.project_name = user
+
+		user = menu(CL_TXT + 'Offer output file [' + CL_DEF + self.project_offer_filename + CL_TXT + '] : ' + CL_E)
+		if user and check_file_exists(user):
+			self.project_offer_filename = user
+
+		print
+
+	def export_to_odt(self):
+		if secretary_available:
+			user = menu(CL_TXT + 'Filename for export [' + CL_DEF + self.project_offer_filename + CL_TXT + '] : ' + CL_E)
+			if not user == '.':
+				if not user:
+					user = self.project_offer_filename
+				if check_file_exists(user):
+					self.project_offer_filename = user
+
+					print CL_TXT + 'Exporting to file ...' + CL_E
+
+
+					# generate content for output
+					print CL_INF + 'Feature will be available soon ...' + CL_E
+
+		else:
+			print 'No secretary-module was loaded. Use \'pip install secretary\' to install it.'
+
+		print
+
 
 class Single_Entry_Class(object):
-	def __init__(self, title='Music', h=1.6, amount=1):
+	def __init__(self, title='Music', h=1.6, amount=1, comment=''):
 		self.title = title
+		self.comment = comment
 		self.h = h
 		self.amount = amount
 		self.id = str(uuid.uuid1())
@@ -477,8 +594,9 @@ class Single_Entry_Class(object):
 
 
 class Single_Mod_Class(object):
-	def __init__(self, title='Exclusive', multi=3, time=False, entries=()):
+	def __init__(self, title='Exclusive', multi=3, time=False, entries=(), comment=''):
 		self.title = title
+		self.comment = comment
 		self.multi = multi
 		self.time = time
 		self.entries = entries
@@ -541,9 +659,11 @@ while user != 'exit' and user != 'e' and user != '.':
 			[CL_TXT + 'entry / a' + CL_E, CL_TXT + 'adds a new entry' + CL_E],
 			[CL_TXT + 'mod / m' + CL_E, CL_TXT + 'adds a new modulator' + CL_E],
 			[CL_TXT + 'new / n' + CL_E, CL_TXT + 'creates a new project immediately' + CL_E],
+			[CL_TXT + 'project / p' + CL_E, CL_TXT + 'set up project name etc.' + CL_E],
 			[CL_TXT + 'wage / w' + CL_E, CL_TXT + 'chose the wage' + CL_E],
 			[CL_TXT + 'save / s' + CL_E, CL_TXT + 'saves the project' + CL_E],
 			[CL_TXT + 'load / l' + CL_E, CL_TXT + 'loads the project' + CL_E],
+			[CL_TXT + 'export / exp' + CL_E, CL_TXT + 'exports the project' + CL_E],
 			[CL_TXT + 'help / h' + CL_E, CL_TXT + 'this help text' + CL_E],
 			[CL_TXT + 'exit / e / .' + CL_E, CL_TXT + 'end the program' + CL_E]
 			]
@@ -564,6 +684,11 @@ while user != 'exit' and user != 'e' and user != '.':
 	elif user == 'new' or user == 'n':
 		Entries = Entries_Class()
 
+	# set up project variables
+	elif user == 'project' or user == 'p':
+		print
+		Entries.project_setup()
+
 	# set the wage
 	elif user == 'wage' or user == 'w':
 		print
@@ -578,6 +703,11 @@ while user != 'exit' and user != 'e' and user != '.':
 	elif user == 'load' or user == 'l':
 		print
 		Loader()
+
+	# exports the project
+	elif user == 'export' or user == 'exp':
+		print
+		Entries.export_to_odt()
 
 	# testing
 	elif user == 'test' or user == 't':
