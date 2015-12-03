@@ -145,9 +145,9 @@ def Loader():
 					if len(Loader) > 8:
 						Entries.Wage = Loader[8]
 					if len(Loader) > 9:
-						Entries.poject_round = Loader[9]
+						Entries.project_round = Loader[9]
 					if len(Loader) > 10:
-						Entries.poject_commodity = Loader[10]
+						Entries.project_commodity = Loader[10]
 					loaded_project = project_names[int(user)]
 		else:
 			print CL_INF + 'No projects exists.' + CL_E
