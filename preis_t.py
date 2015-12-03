@@ -81,7 +81,7 @@ CL_E = configuration.CL_E
 
 def check_file_exists(the_file):
 	if os.path.isfile(the_file):
-		user = menu( CL_INF + 'File already exists. Overwrite? [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E )
+		user = raw_input( CL_INF + 'File already exists. Overwrite? [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E )
 		if user:
 			if user == 'y' or user == 'yes':
 				print CL_INF + 'File will be overwritten on export!' + CL_E
@@ -212,76 +212,44 @@ def cls():
 	print
 
 
-def menu(txt=CL_TXT + '# ' + CL_E, typ='str'):
-	out = raw_input(txt)
-	if out:
-		if typ == 'str':
-			return out
-		elif typ == 'int':
-			try:
-				return int(out)
-			except ValueError:
-				return 0
-		elif typ == 'float':
-			try:
-				if '*' in out:
-					calc = out.split('*')
-					for x in xrange(0,len(calc)):
-						calc[x] = calc[x].replace(',', '.')
-						try:
-							calc[x] = float(calc[x])
-						except Exception, e:
-							calc[x] = 1.0
-					out = 1.0
-					for x in calc:
-						out = out*x
-					return out
-				else:
-					return float(out.replace(',', '.'))
-			except Exception, e:
-				return 0.0
-		elif typ == 'tuple':
-			try:
-				return tuple(out.split(','))
-			except Exception, e:
-				return ()
-		elif typ == 'bool':
-			try:
-				if out == '1' or out.lower() == 'true':
-					return True
-				else:
-					return False
-			except Exception, e:
-				return False
-	else:
-		return out
-
 def preset_choser(what, preset, title='', comment=''):
 	print
 	if preset.has_key('h'):
 		if what == 'entry':
-			title_tmp = menu(CL_TXT + 'Title [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
+			title_tmp = raw_input(CL_TXT + 'Title [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
 			if title_tmp:
 				title = title_tmp
-			comment_tmp = menu(CL_TXT + 'Comment [' + CL_DEF + comment + CL_TXT + ']: ' + CL_E)
+			comment_tmp = raw_input(CL_TXT + 'Comment [' + CL_DEF + comment + CL_TXT + ']: ' + CL_E)
 			if comment_tmp:
 				comment = comment_tmp
-			amount = menu(CL_TXT + 'Amount: ' + CL_E, 'float')
-			amount = amount or 1.0
+			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + '] : ' + CL_E)
+			try:
+				amount = float(amount.replace(',', '.')) or 1.0
+			except Exception, e:
+				amount = 1.0
 			Entries.add(what='entry', title=title, h=float(preset['h']), amount=amount, comment=comment)
 		elif what == 'mod':
-			title_tmp = menu(CL_TXT + 'Title [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
+			title_tmp = raw_input(CL_TXT + 'Title [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
 			if title_tmp:
 				title = title_tmp
-			comment_tmp = menu(CL_TXT + 'Comment [' + CL_DEF + comment + CL_TXT + ']: ' + CL_E)
+			comment_tmp = raw_input(CL_TXT + 'Comment [' + CL_DEF + comment + CL_TXT + ']: ' + CL_E)
 			if comment_tmp:
 				comment = comment_tmp
-			entries = menu(CL_TXT + 'Entries: ' + CL_E, 'tuple')
+			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + '] : ' + CL_E)
+			try:
+				amount = float(amount.replace(',', '.')) or 1.0
+			except Exception, e:
+				amount = 1.0
+			entries = raw_input(CL_TXT + 'Entries: ' + CL_E)
 			if entries:
-				entries = Entries.index_to_entries(entries, len(Entries.mods))
+				try:
+					entries = tuple(entries.split(','))
+				except Exception, e:
+					entries = ()
+				entries = Entries.index_to_entries(entries)
 			else:
 				entries = []
-			Entries.add(what='mod', title=title, multi=float(preset['h']), time=bool(preset['t']), entries=entries, comment=comment)
+			Entries.add(what='mod', title=title, multi=float(preset['h']), time=bool(preset['t']), entries=entries, comment=comment, amount=amount)
 	else:
 		i = 0
 		c = []
@@ -292,7 +260,13 @@ def preset_choser(what, preset, title='', comment=''):
 			i += 1
 			print CL_TXT + '(' + str(i) + ') ' + x + CL_E
 			c.append(x)
-		chose = menu(CL_TXT + 'Preset: ' + CL_E, 'int')
+		chose = raw_input(CL_TXT + 'Preset: ' + CL_E)
+		try:
+			chose = int(chose)
+		except Exception, e:
+			chose = 0
+		if chose > i:
+			chose = i
 		next_title_pre = '' if title == '' else title + ' > '
 		if chose == 0 or not chose:
 			Entries.add_edit(what)
@@ -343,117 +317,176 @@ class Entries_Class(object):
 			# it's an entry
 			if which < len(self.list):
 
-				delete = menu(CL_TXT + 'Delete [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E)
+				delete = raw_input(CL_TXT + 'Delete [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E)
 				if delete == 'yes' or delete == 'y':
 					self.list.pop(which)
 					return
 
 				which = int(which)
 
-				title = menu(CL_TXT + 'Title [' + CL_DEF + self.list[which].title + CL_TXT + '] : ' + CL_E)
+				title = raw_input(CL_TXT + 'Title [' + CL_DEF + self.list[which].title + CL_TXT + '] : ' + CL_E)
 				title = title or self.list[which].title
 				self.list[which].title = title
 
-				comment = menu(CL_TXT + 'Comment [' + CL_DEF + self.list[which].comment + CL_TXT + '] : ' + CL_E)
+				comment = raw_input(CL_TXT + 'Comment [' + CL_DEF + self.list[which].comment + CL_TXT + '] : ' + CL_E)
 				comment = comment or self.list[which].comment
 				self.list[which].comment = comment
 
-				h = menu(CL_TXT + 'H / Amount [' + CL_DEF + str(self.list[which].h) + CL_TXT + '] : ' + CL_E, 'float')
-				if h == 0.0:
+				h = raw_input(CL_TXT + 'H / Amount [' + CL_DEF + str(self.list[which].h) + CL_TXT + '] : ' + CL_E)
+				if h == 'e':
 					h = self.hCalc()
 				else:
-					h = h or self.list[which].h
+					try:
+						h = float(h.replace(',', '.'))
+					except Exception, e:
+						h = self.list[which].h
 				self.list[which].h = h
 
-				amount = menu(CL_TXT + 'Amount [' + CL_DEF + str(self.list[which].amount) + CL_TXT + '] : ' + CL_E, 'float')
-				amount = amount or self.list[which].amount
+				amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + str(self.list[which].amount) + CL_TXT + '] : ' + CL_E)
+				try:
+					amount = float(amount.replace(',', '.'))
+				except Exception, e:
+					amount = self.list[which].amount
 				self.list[which].amount = amount
 
 			# it's a modulator
 			else:
-				delete = menu(CL_TXT + 'Delete [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E)
+				delete = raw_input(CL_TXT + 'Delete [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E)
 				if delete == 'yes' or delete == 'y':
 					self.mods.pop(which - len(self.list))
 					return
 
 				which = int(which) - len(self.list)
 
-				title = menu(CL_TXT + 'Title ['  + CL_DEF + self.mods[which].title + CL_TXT + '] : ' + CL_E)
+				title = raw_input(CL_TXT + 'Title ['  + CL_DEF + self.mods[which].title + CL_TXT + '] : ' + CL_E)
 				title = title or self.mods[which].title
 				self.mods[which].title = title
 
-				comment = menu(CL_TXT + 'Comment ['  + CL_DEF + self.mods[which].comment + CL_TXT + '] : ' + CL_E)
+				comment = raw_input(CL_TXT + 'Comment ['  + CL_DEF + self.mods[which].comment + CL_TXT + '] : ' + CL_E)
 				comment = comment or self.mods[which].comment
 				self.mods[which].comment = comment
 
-				multi = menu(CL_TXT + 'Multiplicator [' + CL_DEF + str(self.mods[which].multi) + CL_TXT + '] : ' + CL_E, 'float')
-				multi = multi or self.mods[which].multi
+				multi = raw_input(CL_TXT + 'Multiplicator [' + CL_DEF + str(self.mods[which].multi) + CL_TXT + '] : ' + CL_E)
+				try:
+					multi = float(multi.replace(',', '.'))
+				except Exception, e:
+					multi = self.mods[which].multi
 				self.mods[which].multi = multi
 
-				entries = menu(CL_TXT + 'Entries [' + CL_DEF + self.entries_to_index(self.mods[which].entries) + CL_TXT + '] : ' + CL_E, 'tuple')
+				amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + str(self.mods[which].amount) + CL_TXT + '] : ' + CL_E)
+				try:
+					amount = float(amount.replace(',', '.'))
+				except Exception, e:
+					amount = self.mods[which].amount
+				self.mods[which].amount = amount
+
+				entries = raw_input(CL_TXT + 'Entries [' + CL_DEF + self.entries_to_index(self.mods[which].entries) + CL_TXT + '] : ' + CL_E)
 				if entries:
-					entries = self.index_to_entries(entries, len(self.mods))
+					try:
+						entries = tuple(entries.split(','))
+					except Exception, e:
+						entries = ()
+					entries = self.index_to_entries(entries)
 				else:
 					entries = self.mods[which].entries
 				self.mods[which].entries = entries
 
-				time = menu(CL_TXT + 'Time [' + CL_DEF + self.mods[which].getTime_status() + CL_TXT + '] : ' + CL_E, 'bool')
+				time = raw_input(CL_TXT + 'Time [' + CL_DEF + self.mods[which].getTime_status() + CL_TXT + '] : ' + CL_E)
+				if time:
+					if time.lower() == 't' or time.lower() == 'true':
+						time = True
+					else:
+						time = False
+				else:
+					time = self.mods[which].time
 				self.mods[which].time = time
 
 	def add(self, what='entry', title='Music', h=1.6, amount=1, multi=0.2, entries=[], time=True, comment=''):
 		if what == 'entry':
 			self.list.append( Single_Entry_Class(title=title, h=h, amount=amount, comment=comment) )
 		elif what == 'mod':
-			self.mods.append( Single_Mod_Class(title=title, multi=multi, entries=entries, time=time, comment=comment) )
+			self.mods.append( Single_Mod_Class(title=title, multi=multi, entries=entries, time=time, comment=comment, amount=amount) )
 
 	def hCalc(self):
-		h_unit = menu(CL_TXT + '-- H / unit [' + CL_DEF + '0.4' + CL_TXT + '] : ' + CL_E, 'float')
-		h_unit = h_unit or 0.4
-		units = menu(CL_TXT + '-- units [' + CL_DEF + '1' + CL_TXT + '] : ' + CL_E, 'float')
-		units = units or 1.0
+		h_unit = raw_input(CL_TXT + '-- H / unit [' + CL_DEF + '0.4' + CL_TXT + '] : ' + CL_E)
+		try:
+			h_unit = float(h_unit.replace(',', '.'))
+		except Exception, e:
+			h_unit = 0.4
+		units = raw_input(CL_TXT + '-- units [' + CL_DEF + '1' + CL_TXT + '] : ' + CL_E)
+		try:
+			unit = float(unit.replace(',', '.'))
+		except Exception, e:
+			unit = 1.0
 		out = h_unit * units
 		print CL_TXT + '-- H / Amount : ' + CL_DEF + str(out) + CL_E
 		return out
 
 	def add_edit(self, what):
 		if what == 'entry':
-			title = menu(CL_TXT + 'Title [' + CL_DEF + 'Music' + CL_TXT + '] : ' + CL_E)
+			title = raw_input(CL_TXT + 'Title [' + CL_DEF + 'Music' + CL_TXT + '] : ' + CL_E)
 			title = title or 'Music'
 
-			comment = menu(CL_TXT + 'Comment [] : ' + CL_E)
+			comment = raw_input(CL_TXT + 'Comment [] : ' + CL_E)
 
-			h = menu(CL_TXT + 'H / Amount [' + CL_DEF + '1.6' + CL_TXT + '] : ' + CL_E, 'float')
-			if h == 0.0:
+			h = raw_input(CL_TXT + 'H / Amount [' + CL_DEF + '1.6' + CL_TXT + '] : ' + CL_E)
+			if h == 'e':
 				h = self.hCalc()
 			else:
-				h = h or 1.6
+				try:
+					h = float(h.replace(',', '.'))
+				except Exception, e:
+					h = 1.6
 
-			amount = menu(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + '] : ' + CL_E, 'float')
-			amount = amount or 1
+			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + '] : ' + CL_E)
+			try:
+				amount = float(amount.replace(',', '.'))
+			except Exception, e:
+				amount = 1.0
 
 			self.add(what=what, title=title, h=h, amount=amount, comment=comment)
 		elif what == 'mod':
-			title = menu(CL_TXT + 'Title [' + CL_DEF + 'Exclusive' + CL_TXT + '] : ' + CL_E)
+			title = raw_input(CL_TXT + 'Title [' + CL_DEF + 'Exclusive' + CL_TXT + '] : ' + CL_E)
 			title = title or 'Exclusive'
 
-			comment = menu(CL_TXT + 'Comment [] : ' + CL_E)
+			comment = raw_input(CL_TXT + 'Comment [] : ' + CL_E)
 
-			multi = menu(CL_TXT + 'Multiplicator [' + CL_DEF + '3.0' + CL_TXT + '] : ' + CL_E, 'float')
-			multi = multi or 3
+			multi = raw_input(CL_TXT + 'Multiplicator [' + CL_DEF + '3.0' + CL_TXT + '] : ' + CL_E)
+			try:
+				multi = float(multi.replace(',', '.'))
+			except Exception, e:
+				multi = 3
 
-			entries = menu(CL_TXT + 'Entries [] : ' + CL_E, 'tuple')
+			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + '] : ' + CL_E)
+			try:
+				amount = float(amount.replace(',', '.'))
+			except Exception, e:
+				amount = 1.0
+
+			entries = raw_input(CL_TXT + 'Entries [] : ' + CL_E)
 			if entries:
-				entries = self.index_to_entries(entries, len(self.mods))
+				try:
+					entries = tuple(entries.split(','))
+				except Exception, e:
+					entries = ()
+				entries = self.index_to_entries(entries)
 			else:
 				entries = []
 
-			time = menu(CL_TXT + 'Time [' + CL_DEF + 'False' + CL_TXT + '] : ' + CL_E, 'bool')
+			time = raw_input(CL_TXT + 'Time [' + CL_DEF + 'False' + CL_TXT + '] : ' + CL_E)
+			if time:
+				if time.lower() == 't' or time.lower() == 'true':
+					time = True
+				else:
+					time = False
+			else:
+				time = False
 
-			self.add(what=what, title=title, multi=multi, entries=entries, time=time, comment=comment)
+			self.add(what=what, title=title, multi=multi, entries=entries, time=time, comment=comment, amount=amount)
 
-	def index_to_entries(self, index, which):
+	def index_to_entries(self, entries):
 		out = []
-		for x in index:
+		for x in entries:
 			out.append( self.list[int(x)].id )
 		return out
 
@@ -493,7 +526,7 @@ class Entries_Class(object):
 			show.append( [CL_OUT + str(i) + CL_E, CL_OUT + unicode(x.title, 'utf-8') + CL_E, CL_OUT + str(x.amount) + CL_E, CL_OUT + str(self.return_time( x.getTime() )) + CL_E, CL_OUT + str(x.getPrice(self.Wage)) + CL_E] )
 			i += 1
 		for x in self.mods:
-			show.append( [CL_OUT + str(i) + CL_E, CL_OUT + unicode(x.title, 'utf-8') + CL_E, CL_OUT + '*' + CL_E, CL_OUT + str(self.return_time( x.getTime(self.list) )) + CL_E, CL_OUT + str(x.getPrice(self.Wage, self.list)) + CL_E] )
+			show.append( [CL_OUT + str(i) + CL_E, CL_OUT + unicode(x.title, 'utf-8') + CL_E, CL_OUT + str(x.amount) + ' *' + CL_E, CL_OUT + str(self.return_time( x.getTime(self.list) )) + CL_E, CL_OUT + str(x.getPrice(self.Wage, self.list)) + CL_E] )
 			i += 1
 		if not just_show:
 			show.append( [CL_TXT + 'a' + CL_E, CL_TXT + '[New entry]' + CL_E, CL_TXT + '...' + CL_E, CL_TXT + '?' + CL_E, CL_TXT + '?' + CL_E] )
@@ -511,7 +544,7 @@ class Entries_Class(object):
 		print CL_TXT + '(b) Edu [' + CL_DEF + str(self.Wage_Edu) + CL_TXT +']' + CL_E
 		print CL_TXT + '(c) Low [' + CL_DEF + str(self.Wage_Low) + CL_TXT + ']' + CL_E
 		print CL_TXT + '(any number) Individual wage' + CL_E
-		wager = menu()
+		wager = raw_input(CL_TXT + '# ' + CL_E)
 		if wager == 'a':
 			self.Wage = self.Wage_Pro
 		elif wager == 'b':
@@ -531,30 +564,30 @@ class Entries_Class(object):
 
 		print CL_TXT + 'Enter clients information:' + CL_E
 
-		user = menu(CL_TXT + 'Client title [' + CL_DEF + self.project_client_title + CL_TXT + '] : ' + CL_E)
+		user = raw_input(CL_TXT + 'Client title [' + CL_DEF + self.project_client_title + CL_TXT + '] : ' + CL_E)
 		if user:
 			self.project_client_title = user
 
-		user = menu(CL_TXT + 'Client name [' + CL_DEF + self.project_client_name + CL_TXT + '] : ' + CL_E)
+		user = raw_input(CL_TXT + 'Client name [' + CL_DEF + self.project_client_name + CL_TXT + '] : ' + CL_E)
 		if user:
 			self.project_client_name = user
 
-		user = menu(CL_TXT + 'Client address [' + CL_DEF + self.project_client_address + CL_TXT + '] : ' + CL_E)
+		user = raw_input(CL_TXT + 'Client address [' + CL_DEF + self.project_client_address + CL_TXT + '] : ' + CL_E)
 		if user:
 			self.project_client_address = user
 
-		user = menu(CL_TXT + 'Client city [' + CL_DEF + self.project_client_city + CL_TXT + '] : ' + CL_E)
+		user = raw_input(CL_TXT + 'Client city [' + CL_DEF + self.project_client_city + CL_TXT + '] : ' + CL_E)
 		if user:
 			self.project_client_city = user
 
-		user = menu(CL_TXT + 'Project name [' + CL_DEF + self.project_name + CL_TXT + '] : ' + CL_E)
+		user = raw_input(CL_TXT + 'Project name [' + CL_DEF + self.project_name + CL_TXT + '] : ' + CL_E)
 		if user:
 			self.project_name = user
 			loaded_project = user
 
 
 		self.project_offer_filename = self.project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', self.project_name.replace(' ', '_'))
-		user = menu(CL_TXT + 'Offer output file [' + CL_DEF + self.project_offer_filename + CL_TXT + '] : ' + CL_E)
+		user = raw_input(CL_TXT + 'Offer output file [' + CL_DEF + self.project_offer_filename + CL_TXT + '] : ' + CL_E)
 		if user and check_file_exists(user):
 			self.project_offer_filename = user
 
@@ -563,7 +596,7 @@ class Entries_Class(object):
 	def export_to_odt(self):
 		if secretary_available:
 			self.project_offer_filename = self.project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', self.project_name.replace(' ', '_'))
-			user = menu(CL_TXT + 'Filename for export [' + CL_DEF + self.project_offer_filename + CL_TXT + '] : ' + CL_E)
+			user = raw_input(CL_TXT + 'Filename for export [' + CL_DEF + self.project_offer_filename + CL_TXT + '] : ' + CL_E)
 			if not user == '.':
 				if not user:
 					user = self.project_offer_filename
@@ -623,11 +656,12 @@ class Single_Entry_Class(object):
 
 
 class Single_Mod_Class(object):
-	def __init__(self, title='Exclusive', multi=3, time=False, entries=(), comment=''):
+	def __init__(self, title='Exclusive', multi=3, time=False, entries=(), comment='', amount=1):
 		self.title = title
 		self.comment = comment
 		self.multi = multi
 		self.time = time
+		self.amount = amount
 		self.entries = entries
 
 	def getTime_status(self):
@@ -646,7 +680,7 @@ class Single_Mod_Class(object):
 		out = 0.0
 		for x in list:
 			if self.has_entry(x) and self.time:
-				out += x.getTime() * self.multi
+				out += x.getTime() * self.multi * self.amount
 		return round(out, 2)
 
 	def getPrice(self, wage, list):
@@ -673,7 +707,7 @@ while user != 'exit' and user != 'e' and user != '.':
 
 	cls()
 	Entries.show_as_table()
-	user = menu()
+	user = raw_input(CL_TXT + '# ' + CL_E)
 
 
 	# input is a command / string
