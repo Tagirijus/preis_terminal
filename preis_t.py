@@ -119,15 +119,28 @@ def Loader():
 			user = raw_input(CL_TXT + 'Chose project [' + CL_DEF + 'none' + CL_TXT + ']: ' + CL_E)
 			if user:
 				Loader = LoadObject( project_files[int(user)] )
-				Entries.project_client_name = Loader[0]
-				Entries.project_client_address = Loader[1]
-				Entries.project_client_city = Loader[2]
-				Entries.project_name = Loader[3]
-				Entries.project_offer_filename = Loader[4]
-				Entries.project_client_title = Loader[5]
-				Entries.list = Loader[6]
-				Entries.mods = Loader[7]
-				Entries.Wage = Loader[8]
+				if len(Loader) > 0:
+					Entries.project_client_name = Loader[0]
+				if len(Loader) > 1:
+					Entries.project_client_address = Loader[1]
+				if len(Loader) > 2:
+					Entries.project_client_city = Loader[2]
+				if len(Loader) > 3:
+					Entries.project_name = Loader[3]
+				if len(Loader) > 4:
+					Entries.project_offer_filename = Loader[4]
+				if len(Loader) > 5:
+					Entries.project_client_title = Loader[5]
+				if len(Loader) > 6:
+					Entries.list = Loader[6]
+				if len(Loader) > 7:
+					Entries.mods = Loader[7]
+				if len(Loader) > 8:
+					Entries.Wage = Loader[8]
+				if len(Loader) > 9:
+					Entries.poject_round = Loader[9]
+				if len(Loader) > 10:
+					Entries.poject_commodity = Loader[10]
 				loaded_project = project_names[int(user)]
 		else:
 			print CL_INF + 'No projects exists.' + CL_E
@@ -172,6 +185,8 @@ def Saver(obj):
 			Saver.append( obj.list )
 			Saver.append( obj.mods )
 			Saver.append( obj.Wage )
+			Saver.append( obj.poject_round )
+			Saver.append( obj.poject_commodity )
 			SaveObject(Saver, file_name)
 			loaded_project = loaded_project_tmp
 
