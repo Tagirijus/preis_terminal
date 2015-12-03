@@ -192,8 +192,8 @@ def Saver(obj):
 			Saver.append( obj.list )
 			Saver.append( obj.mods )
 			Saver.append( obj.Wage )
-			Saver.append( obj.poject_round )
-			Saver.append( obj.poject_commodity )
+			Saver.append( obj.project_round )
+			Saver.append( obj.project_commodity )
 			SaveObject(Saver, file_name)
 			loaded_project = loaded_project_tmp
 
