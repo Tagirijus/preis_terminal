@@ -107,7 +107,7 @@ def Loader():
 		project_files = []
 		project_names = []
 		for x in all_in_dir:
-			if '.preis_t' in x:
+			if '.preis_t' in x and not x[0:1] == '_':
 				project_files.append( path_to_project + '/projects/' + x )
 				project_names.append( x.replace('.preis_t', '').replace('_', ' ') )
 		if len(project_files) > 0:
@@ -116,32 +116,39 @@ def Loader():
 			for y, x in enumerate(project_names):
 				print CL_TXT + '(' + str(y) + ') ' + x + CL_E
 			print
-			user = raw_input(CL_TXT + 'Chose project [' + CL_DEF + 'none' + CL_TXT + ']: ' + CL_E)
+			user = raw_input(CL_TXT + 'Chose project [' + CL_DEF + 'none' + CL_TXT + '] : ' + CL_E)
 			if user:
-				Loader = LoadObject( project_files[int(user)] )
-				if len(Loader) > 0:
-					Entries.project_client_name = Loader[0]
-				if len(Loader) > 1:
-					Entries.project_client_address = Loader[1]
-				if len(Loader) > 2:
-					Entries.project_client_city = Loader[2]
-				if len(Loader) > 3:
-					Entries.project_name = Loader[3]
-				if len(Loader) > 4:
-					Entries.project_offer_filename = Loader[4]
-				if len(Loader) > 5:
-					Entries.project_client_title = Loader[5]
-				if len(Loader) > 6:
-					Entries.list = Loader[6]
-				if len(Loader) > 7:
-					Entries.mods = Loader[7]
-				if len(Loader) > 8:
-					Entries.Wage = Loader[8]
-				if len(Loader) > 9:
-					Entries.poject_round = Loader[9]
-				if len(Loader) > 10:
-					Entries.poject_commodity = Loader[10]
-				loaded_project = project_names[int(user)]
+				load_it = True
+				user2 = raw_input(CL_INF + 'Delete? [' + CL_DEF + 'no' + CL_INF + '] : ' + CL_E)
+				if user2:
+					if user2 == 'y' or user2 == 'yes':
+						os.rename( project_files[int(user)], project_files[int(user)].replace(path_to_project + '/projects/', path_to_project + '/projects/_') )
+						load_it = False
+				if load_it:
+					Loader = LoadObject( project_files[int(user)] )
+					if len(Loader) > 0:
+						Entries.project_client_name = Loader[0]
+					if len(Loader) > 1:
+						Entries.project_client_address = Loader[1]
+					if len(Loader) > 2:
+						Entries.project_client_city = Loader[2]
+					if len(Loader) > 3:
+						Entries.project_name = Loader[3]
+					if len(Loader) > 4:
+						Entries.project_offer_filename = Loader[4]
+					if len(Loader) > 5:
+						Entries.project_client_title = Loader[5]
+					if len(Loader) > 6:
+						Entries.list = Loader[6]
+					if len(Loader) > 7:
+						Entries.mods = Loader[7]
+					if len(Loader) > 8:
+						Entries.Wage = Loader[8]
+					if len(Loader) > 9:
+						Entries.poject_round = Loader[9]
+					if len(Loader) > 10:
+						Entries.poject_commodity = Loader[10]
+					loaded_project = project_names[int(user)]
 		else:
 			print CL_INF + 'No projects exists.' + CL_E
 			print
