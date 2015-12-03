@@ -57,7 +57,9 @@ def_project_name		 	= configuration.def_project_name
 def_project_offer_filename 	= configuration.def_project_offer_filename
 offer_template_filename	 	= configuration.offer_template_filename
 
-date_format		 	= configuration.date_format
+date_format		 			= configuration.date_format
+decimal			 			= configuration.decimal
+def_commodity	 			= configuration.def_commodity
 
 colorize = configuration.colorize
 
@@ -301,6 +303,8 @@ class Entries_Class(object):
 		self.project_client_city = def_project_client_city
 		self.project_name = def_project_name
 		self.project_offer_filename = def_project_offer_filename
+		self.project_round = True
+		self.project_commodity = def_commodity
 		self.list = []
 		self.mods = []
 		self.Wage = 40
@@ -393,7 +397,7 @@ class Entries_Class(object):
 
 				time = raw_input(CL_TXT + 'Time [' + CL_DEF + self.mods[which].getTime_status() + CL_TXT + '] : ' + CL_E)
 				if time:
-					if time.lower() == 't' or time.lower() == 'true':
+					if time.lower() == 'y' or time.lower() == 'yes':
 						time = True
 					else:
 						time = False
@@ -475,7 +479,7 @@ class Entries_Class(object):
 
 			time = raw_input(CL_TXT + 'Time [' + CL_DEF + 'False' + CL_TXT + '] : ' + CL_E)
 			if time:
-				if time.lower() == 't' or time.lower() == 'true':
+				if time.lower() == 'y' or time.lower() == 'yes':
 					time = True
 				else:
 					time = False
@@ -500,15 +504,15 @@ class Entries_Class(object):
 					out = out + ', ' + str(self.list.index(x))
 		return out
 
-	def sum(self):
+	def sum(self, round_it=False):
 		out_h = 0
 		out_p = 0
 		for x in self.list:
 			out_h += x.getTime()
-			out_p += x.getPrice(self.Wage)
+			out_p += x.getPrice(self.Wage, round_it)
 		for x in self.mods:
 			out_h += x.getTime(self.list)
-			out_p += x.getPrice(self.Wage, self.list)
+			out_p += x.getPrice(self.Wage, self.list, round_it)
 		return [out_h, out_p]
 
 	def return_time(self, floaty):
@@ -591,6 +595,20 @@ class Entries_Class(object):
 		if user and check_file_exists(user):
 			self.project_offer_filename = user
 
+		tmp_round = 'yes' if self.project_round else 'no'
+		user = raw_input(CL_TXT + 'Round exported output? [' + CL_DEF + tmp_round + CL_TXT + '] :' + CL_E)
+		if user:
+			if user == 'y' or user == 'yes':
+				self.project_round = True
+			else:
+				self.project_round = False
+		else:
+			self.project_round = False
+
+		user = raw_input(CL_TXT + 'Commodity [' + CL_DEF + self.project_commodity + CL_TXT + '] :' + CL_E)
+		if user:
+			self.project_commodity = user
+
 		print
 
 	def export_to_odt(self):
@@ -614,14 +632,14 @@ class Entries_Class(object):
 					client['city'] = unicode(self.project_client_city, 'utf-8')
 					client['project'] = unicode(self.project_name, 'utf-8')
 					client['date'] = unicode(datetime.datetime.now().strftime(date_format), 'utf-8')
-					client['sum'] = unicode(str(self.sum()[1]), 'utf-8')
+					client['sum'] = unicode(str(self.sum(self.project_round)[1]).replace('.', decimal).replace(',0', '') + ' ' + self.project_commodity, 'utf-8')
 
 					entries = []
 					for x in self.list:
-						entries.append( [unicode(x.title, 'utf-8'), unicode(str(x.amount), 'utf-8'), unicode(str(x.getPrice(self.Wage)), 'utf-8'), unicode(x.comment or '-', 'utf-8') ] )
+						entries.append( [unicode(x.title, 'utf-8'), unicode(str(x.amount).replace('.', decimal).replace(',0', ''), 'utf-8'), unicode(str(x.getPrice(self.Wage, self.project_round)).replace('.', decimal).replace(',0', '') + ' ' + self.project_commodity, 'utf-8'), unicode(x.comment or '-', 'utf-8') ] )
 
 					for x in self.mods:
-						entries.append( [unicode(x.title, 'utf-8'), unicode('*', 'utf-8'), unicode(str(x.getPrice(self.Wage, self.list)), 'utf-8'), unicode(x.comment or '-', 'utf-8') ] )
+						entries.append( [unicode(x.title, 'utf-8'), unicode(str(x.amount).replace('.', decimal).replace(',0', ''), 'utf-8'), unicode(str(x.getPrice(self.Wage, self.list, self.project_round)).replace('.', decimal).replace(',0', '') + ' ' + self.project_commodity, 'utf-8'), unicode(x.comment or '-', 'utf-8') ] )
 
 					# final endering
 					engine = secretary.Renderer()
@@ -651,8 +669,11 @@ class Single_Entry_Class(object):
 	def getTime(self):
 		return round(self.amount * self.h, 2)
 
-	def getPrice(self, wage):
-		return round(self.getTime() * wage, 2)
+	def getPrice(self, wage, round_it=False):
+		if round_it:
+			return int(round(self.getTime() * wage))
+		else:
+			return round(self.getTime() * wage, 2)
 
 
 class Single_Mod_Class(object):
@@ -666,9 +687,9 @@ class Single_Mod_Class(object):
 
 	def getTime_status(self):
 		if not self.time:
-			return 'False'
+			return 'no'
 		else:
-			return 'True'
+			return 'yes'
 
 	def has_entry(self, list_entry):
 		if list_entry.id in self.entries:
@@ -683,12 +704,19 @@ class Single_Mod_Class(object):
 				out += x.getTime() * self.multi * self.amount
 		return round(out, 2)
 
-	def getPrice(self, wage, list):
-		out = 0.0
-		for x in list:
-			if self.has_entry(x):
-				out += x.getPrice(wage) * self.multi
-		return round(out, 2)
+	def getPrice(self, wage, list, round_it=False):
+		if round_it:
+			out = 0
+			for x in list:
+				if self.has_entry(x):
+					out += x.getPrice(wage) * self.multi
+			return int(round(out))
+		else:
+			out = 0.0
+			for x in list:
+				if self.has_entry(x):
+					out += x.getPrice(wage) * self.multi
+			return round(out, 2)
 
 
 

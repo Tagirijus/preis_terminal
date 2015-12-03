@@ -14,7 +14,9 @@ def_project_name		 	= 'Projekt X'
 def_project_offer_filename 	= 'Angebot_{YEAR}_-_{PROJECT_NAME}.odt'
 offer_template_filename		= path_to_project + '/template.odt'
 
-date_format			= '%d.%m.%Y'
+date_format					= '%d.%m.%Y'
+decimal						= ','
+def_commodity				= '€'
 
 
 # coor stuff
