@@ -1,21 +1,39 @@
 E>Büroaufwand>h>0.15
+E>Büroaufwand>c>Kommunikation, Fahrten, Bürokratie
 E>Music>Cuen>h>0.4
+E>Music>Cuen>c>
 E>Music>Band>h>2
+E>Music>Band>c>
 E>Music>Big Band>h>4
+E>Music>Big Band>c>
 E>Music>Dubstep>h>2.4
+E>Music>Dubstep>c>
 E>Music>Electro>h>0.9
+E>Music>Electro>c>
 E>Music>Piano>h>1.2
+E>Music>Piano>c>
 E>Music>Orchestra>h>3.5
+E>Music>Orchestra>c>
 E>Music>Notate 1 voice>h>0.2
+E>Music>Notate 1 voice>c>
 E>Music>Rec 1 voice>h>0.55
+E>Music>Rec 1 voice>c>
 E>Sound>Min>h>2.5
+E>Sound>Min>c>
 E>Sound>Single>h>0.1
+E>Sound>Single>c>
 E>Sound>Timing>h>0.1
+E>Sound>Timing>c>
 E>Mix>Film / 3 tracks>h>0.25
+E>Mix>Film / 3 tracks>c>
 E>Mix>Audiobook>h>0.03
+E>Mix>Audiobook>c>
 M>Correct>Music>h>0.35
 M>Correct>Music>t>1
+M>Correct>Music>c>
 M>Correct>Sound>h>0.1
 M>Correct>Sound>t>1
+M>Correct>Sound>c>
 M>Exclusive>h>3
 M>Exclusive>t>
+M>Exclusive>c>

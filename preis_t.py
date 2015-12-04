@@ -255,7 +255,20 @@ def cls():
 def preset_choser(what, preset, title='', comment=''):
 	print
 	if preset.has_key('h'):
-		if what == 'entry':
+		if what == 'fix':
+			title_tmp = raw_input(CL_TXT + 'Title [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
+			if title_tmp:
+				title = title_tmp
+			comment_tmp = raw_input(CL_TXT + 'Comment [' + CL_DEF + comment + CL_TXT + ']: ' + CL_E)
+			if comment_tmp:
+				comment = comment_tmp
+			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + ']: ' + CL_E)
+			try:
+				amount = float(amount.replace(',', '.')) or 1.0
+			except Exception, e:
+				amount = 1.0
+			Entries.add(what='fix', title=title, h=float(preset['h']), price=float(preset['p']), amount=amount, comment=comment)
+		elif what == 'entry':
 			title_tmp = raw_input(CL_TXT + 'Title [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
 			if title_tmp:
 				title = title_tmp
@@ -311,7 +324,11 @@ def preset_choser(what, preset, title='', comment=''):
 		if chose == 0 or not chose:
 			Entries.add_edit(what)
 		else:
-			preset_choser(what, preset[c[chose]], next_title_pre + c[chose])
+			if preset[c[chose]].has_key('c'):
+				tmp_comment = preset[c[chose]]['c']
+			else:
+				tmp_comment = ''
+			preset_choser(what, preset[c[chose]], next_title_pre + c[chose], tmp_comment)
 
 
 # presets
@@ -346,19 +363,79 @@ class Entries_Class(object):
 		self.project_company = def_project_company
 		self.list = []
 		self.mods = []
+		self.fixed = []
 		self.Wage = 40
 		self.Wage_Pro = 40
 		self.Wage_Edu = 33
 		self.Wage_Low = 25
 
 	def count(self):
-		return len(self.list) + len(self.mods)
+		return len(self.fixed) + len(self.list) + len(self.mods)
+
+	def is_this_type(self, what='fix', where=0):
+		fix_start = 0
+		entry_start = len(self.fixed)
+		mod_start = len(self.fixed) + len(self.list)
+		ende = len(self.fixed) + len(self.list) + len(self.mods)
+
+		if what == 'fix':
+			if where < entry_start:
+				return True
+
+		if what == 'entry':
+			if where >= entry_start and where < mod_start:
+				return True
+
+		if what == 'mod':
+			if where >= mod_start and where < ende:
+				return True
+
+		return False
 
 	def edit(self, which):
 		if type(which) is not str:
 
+			# it's a fixed
+			if self.is_this_type('fix', which):
+
+				delete = raw_input(CL_TXT + 'Delete [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E)
+				if delete == 'yes' or delete == 'y':
+					self.fixed.pop(which)
+					return
+
+				which = int(which)
+
+				title = raw_input(CL_TXT + 'Title [' + CL_DEF + self.fixed[which].title + CL_TXT + ']: ' + CL_E)
+				title = title or self.fixed[which].title
+				self.fixed[which].title = title
+
+				comment = raw_input(CL_TXT + 'Comment [' + CL_DEF + self.fixed[which].comment + CL_TXT + ']: ' + CL_E)
+				comment = comment or self.fixed[which].comment
+				self.fixed[which].comment = comment
+
+				time = raw_input(CL_TXT + 'Time (0=is no time) [' + CL_DEF + str(self.fixed[which].time) + CL_TXT + ']: ' + CL_E)
+				try:
+					time = float(time.replace(',', '.'))
+				except Exception, e:
+					time = self.fixed[which].time
+				self.fixed[which].time = time
+
+				price = raw_input(CL_TXT + 'Price [' + CL_DEF + str(self.fixed[which].price) + CL_TXT + ']: ' + CL_E)
+				try:
+					price = float(price.replace(',', '.'))
+				except Exception, e:
+					price = self.fixed[which].price
+				self.fixed[which].price = price
+
+				amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + str(self.fixed[which].amount) + CL_TXT + ']: ' + CL_E)
+				try:
+					amount = float(amount.replace(',', '.'))
+				except Exception, e:
+					amount = self.fixed[which].amount
+				self.fixed[which].amount = amount
+
 			# it's an entry
-			if which < len(self.list):
+			elif self.is_this_type('entry', which):
 
 				delete = raw_input(CL_TXT + 'Delete [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E)
 				if delete == 'yes' or delete == 'y':
@@ -393,7 +470,7 @@ class Entries_Class(object):
 				self.list[which].amount = amount
 
 			# it's a modulator
-			else:
+			elif self.is_this_type('mod', which):
 				delete = raw_input(CL_TXT + 'Delete [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E)
 				if delete == 'yes' or delete == 'y':
 					self.mods.pop(which - len(self.list))
@@ -444,11 +521,13 @@ class Entries_Class(object):
 					time = self.mods[which].time
 				self.mods[which].time = time
 
-	def add(self, what='entry', title='Music', h=1.6, amount=1, multi=0.2, entries=[], time=True, comment=''):
+	def add(self, what='entry', title='Music', h=1.6, amount=1.0, multi=0.2, entries=[], time=True, comment='', price=0.0):
 		if what == 'entry':
 			self.list.append( Single_Entry_Class(title=title, h=h, amount=amount, comment=comment) )
 		elif what == 'mod':
 			self.mods.append( Single_Mod_Class(title=title, multi=multi, entries=entries, time=time, comment=comment, amount=amount) )
+		elif what == 'fix':
+			self.fixed.append( Single_Fixed_Class(title=title, time=h, comment=comment, amount=amount, price=price) )
 
 	def hCalc(self):
 		h_unit = raw_input(CL_TXT + '-- H / unit [' + CL_DEF + '0.4' + CL_TXT + ']: ' + CL_E)
@@ -466,7 +545,33 @@ class Entries_Class(object):
 		return out
 
 	def add_edit(self, what):
-		if what == 'entry':
+		if what == 'fix':
+			title = raw_input(CL_TXT + 'Title [' + CL_DEF + 'Baseprice' + CL_TXT + ']: ' + CL_E)
+			title = title or 'Baseprice'
+
+			comment = raw_input(CL_TXT + 'Comment []: ' + CL_E)
+
+			time = raw_input(CL_TXT + 'Time (0=is no time) []: ' + CL_E)
+			try:
+				time = float(time.replace(',', '.'))
+			except Exception, e:
+				time = 0
+
+			price = raw_input(CL_TXT + 'Price [' + CL_DEF + '0.0' + CL_TXT + ']: ' + CL_E)
+			try:
+				price = float(price.replace(',', '.'))
+			except Exception, e:
+				price = 0.0
+
+			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + ']: ' + CL_E)
+			try:
+				amount = float(amount.replace(',', '.'))
+			except Exception, e:
+				amount = 1.0
+
+			self.add(what=what, title=title, h=time, amount=amount, comment=comment, price=price)
+
+		elif what == 'entry':
 			title = raw_input(CL_TXT + 'Title [' + CL_DEF + 'Music' + CL_TXT + ']: ' + CL_E)
 			title = title or 'Music'
 
@@ -488,6 +593,7 @@ class Entries_Class(object):
 				amount = 1.0
 
 			self.add(what=what, title=title, h=h, amount=amount, comment=comment)
+
 		elif what == 'mod':
 			title = raw_input(CL_TXT + 'Title [' + CL_DEF + 'Exclusive' + CL_TXT + ']: ' + CL_E)
 			title = title or 'Exclusive'
@@ -546,6 +652,9 @@ class Entries_Class(object):
 	def sum(self, round_it=False):
 		out_h = 0
 		out_p = 0
+		for x in self.fixed:
+			out_h += x.time
+			out_p += x.getPrice()
 		for x in self.list:
 			out_h += x.getTime()
 			out_p += x.getPrice(self.Wage, round_it)
@@ -561,10 +670,13 @@ class Entries_Class(object):
 		minutes = str(minutes) if minutes > 9 else '0' + str(minutes)
 		return hours + ':' + minutes if floaty > 0.0 else '*'
 
-	def show_as_table(self, just_show=False, head=[CL_TXT + 'ID' + CL_E, CL_TXT + 'Title' + CL_E, CL_TXT + 'Amount' + CL_E, CL_TXT + 'H' + CL_E, CL_TXT + 'Price' + CL_E]):
+	def show_as_table(self, just_show=False, head=[CL_TXT + 'ID' + CL_E, CL_TXT + 'Title' + CL_E, CL_TXT + 'Amount' + CL_E, CL_TXT + 'H' + CL_E, CL_TXT + 'Price']):
 		show = []
 
 		i = 0
+		for x in self.fixed:
+			show.append( [CL_OUT + str(i) + CL_E, CL_OUT + unicode(x.title, 'utf-8') + CL_E, CL_OUT + str(x.amount) + CL_E, CL_OUT + str(self.return_time( x.time )) + CL_E, CL_OUT + str(x.getPrice()) + CL_E] )
+			i += 1
 		for x in self.list:
 			show.append( [CL_OUT + str(i) + CL_E, CL_OUT + unicode(x.title, 'utf-8') + CL_E, CL_OUT + str(x.amount) + CL_E, CL_OUT + str(self.return_time( x.getTime() )) + CL_E, CL_OUT + str(x.getPrice(self.Wage)) + CL_E] )
 			i += 1
@@ -572,6 +684,7 @@ class Entries_Class(object):
 			show.append( [CL_OUT + str(i) + CL_E, CL_OUT + unicode(x.title, 'utf-8') + CL_E, CL_OUT + str(x.amount) + ' *' + CL_E, CL_OUT + str(self.return_time( x.getTime(self.list) )) + CL_E, CL_OUT + str(x.getPrice(self.Wage, self.list)) + CL_E] )
 			i += 1
 		if not just_show:
+			show.append( [CL_TXT + 'f' + CL_E, CL_TXT + '[New fixed]' + CL_E, CL_TXT + '...' + CL_E, CL_TXT + '?' + CL_E, CL_TXT + '?' + CL_E] )
 			show.append( [CL_TXT + 'a' + CL_E, CL_TXT + '[New entry]' + CL_E, CL_TXT + '...' + CL_E, CL_TXT + '?' + CL_E, CL_TXT + '?' + CL_E] )
 			show.append( [CL_TXT + 'm' + CL_E, CL_TXT + '[New mod]' + CL_E, CL_TXT + '...' + CL_E, CL_TXT + '?' + CL_E, CL_TXT + '?' + CL_E] )
 			show.append( [CL_TXT + '--' + CL_E, CL_TXT + '----' + CL_E, CL_TXT + '----' + CL_E, CL_TXT + '----' + CL_E, CL_TXT + '----' + CL_E])
@@ -688,6 +801,9 @@ class Entries_Class(object):
 					client['sum'] = unicode(str(self.sum(self.project_round)[1]).replace('.', decimal).replace(',0', '') + ' ' + self.project_commodity, 'utf-8')
 
 					entries = []
+					for x in self.fixed:
+						entries.append( [unicode(x.title, 'utf-8'), unicode(str(x.amount).replace('.', decimal).replace(',0', ''), 'utf-8'), unicode(str(x.getPrice()).replace('.', decimal).replace(',0', '') + ' ' + self.project_commodity, 'utf-8'), unicode(x.comment or '-', 'utf-8') ] )
+
 					for x in self.list:
 						entries.append( [unicode(x.title, 'utf-8'), unicode(str(x.amount).replace('.', decimal).replace(',0', ''), 'utf-8'), unicode(str(x.getPrice(self.Wage, self.project_round)).replace('.', decimal).replace(',0', '') + ' ' + self.project_commodity, 'utf-8'), unicode(x.comment or '-', 'utf-8') ] )
 
@@ -772,6 +888,24 @@ class Single_Mod_Class(object):
 			return round(out, 2)
 
 
+class Single_Fixed_Class(object):
+	def __init__(self, title='Baseprice', comment='', time=0, price=0.0, amount=1.0):
+		self.title = title
+		self.comment = comment
+		self.time = time
+		self.price = price
+		self.amount = amount
+
+	def getPrice(self):
+		return self.amount * self.price
+
+	def is_time(self):
+		if self.time > 0:
+			return True
+		else:
+			return False
+
+
 
 
 
@@ -800,6 +934,7 @@ while user != 'exit' and user != 'e' and user != '.':
 		head = [CL_TXT + 'command' + CL_E, CL_TXT + 'result' + CL_E]
 		content = [
 			[CL_TXT + '0-99' + CL_E, CL_TXT + 'edit the entry / mod or chose a number higher to create a new one' + CL_E],
+			[CL_TXT + 'fix / f' + CL_E, CL_TXT + 'adds a fixed value' + CL_E],
 			[CL_TXT + 'entry / a' + CL_E, CL_TXT + 'adds a new entry' + CL_E],
 			[CL_TXT + 'mod / m' + CL_E, CL_TXT + 'adds a new modulator' + CL_E],
 			[CL_TXT + 'new / n' + CL_E, CL_TXT + 'creates a new project immediately' + CL_E],
@@ -815,14 +950,28 @@ while user != 'exit' and user != 'e' and user != '.':
 		print
 
 	# new  entry
+	elif user == 'fix' or user == 'f':
+		print
+		if presets.has_key('F'):
+			preset_choser('fix', presets['F'])
+		else:
+			Entries.add_edit('fix')
+
+	# new  entry
 	elif user == 'entry' or user == 'a':
 		print
-		preset_choser('entry', presets['E'])
+		if presets.has_key('E'):
+			preset_choser('entry', presets['E'])
+		else:
+			Entries.add_edit('entry')
 
 	# new modulator
 	elif user == 'mod' or user == 'm':
 		print
-		preset_choser('mod', presets['M'])
+		if presets.has_key('M'):
+			preset_choser('mod', presets['M'])
+		else:
+			Entries.add_edit('mod')
 
 	# creates a new project
 	elif user == 'new' or user == 'n':
@@ -864,7 +1013,7 @@ while user != 'exit' and user != 'e' and user != '.':
 		try:
 			user = int(user)
 
-			# Edit entry
+			# Edit stuff
 			if user < Entries.count() and user >= 0:
 				print
 				Entries.edit(user)
