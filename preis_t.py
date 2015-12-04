@@ -762,13 +762,13 @@ class Single_Mod_Class(object):
 			out = 0
 			for x in list:
 				if self.has_entry(x):
-					out += x.getPrice(wage) * self.multi
+					out += x.getPrice(wage) * self.multi * self.amount
 			return int(round(out))
 		else:
 			out = 0.0
 			for x in list:
 				if self.has_entry(x):
-					out += x.getPrice(wage) * self.multi
+					out += x.getPrice(wage) * self.multi * self.amount
 			return round(out, 2)
 
 
