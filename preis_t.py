@@ -48,6 +48,7 @@ else:
 
 # getting the variables from the settings file - don't change the values here!
 
+def_project_company			= configuration.def_project_company
 def_project_client_title 	= configuration.def_project_client_title
 def_project_client_name 	= configuration.def_project_client_name
 def_project_client_address 	= configuration.def_project_client_address
@@ -56,6 +57,7 @@ def_project_client_city 	= configuration.def_project_client_city
 def_project_name		 	= configuration.def_project_name
 def_project_offer_filename 	= configuration.def_project_offer_filename
 offer_template_filename	 	= configuration.offer_template_filename
+def_project_save_name		= configuration.def_project_save_name
 
 date_format		 			= configuration.date_format
 decimal			 			= configuration.decimal
@@ -118,10 +120,10 @@ def Loader():
 			for y, x in enumerate(project_names):
 				print CL_TXT + '(' + str(y) + ') ' + x + CL_E
 			print
-			user = raw_input(CL_TXT + 'Chose project [' + CL_DEF + 'none' + CL_TXT + '] : ' + CL_E)
+			user = raw_input(CL_TXT + 'Chose project [' + CL_DEF + 'none' + CL_TXT + ']: ' + CL_E)
 			if user:
 				load_it = True
-				user2 = raw_input(CL_INF + 'Delete? [' + CL_DEF + 'no' + CL_INF + '] : ' + CL_E)
+				user2 = raw_input(CL_INF + 'Delete? [' + CL_DEF + 'no' + CL_INF + ']: ' + CL_E)
 				if user2:
 					if user2 == 'y' or user2 == 'yes':
 						os.rename( project_files[int(user)], project_files[int(user)].replace(path_to_project + '/projects/', path_to_project + '/projects/_') )
@@ -150,6 +152,8 @@ def Loader():
 						Entries.project_round = Loader[9]
 					if len(Loader) > 10:
 						Entries.project_commodity = Loader[10]
+					if len(Loader) > 11:
+						Entries.project_company = Loader[11]
 					loaded_project = project_names[int(user)]
 		else:
 			print CL_INF + 'No projects exists.' + CL_E
@@ -167,7 +171,15 @@ def SaveObject(obj, file):
 def Saver(obj):
 	global loaded_project
 
-	user = raw_input( CL_TXT + 'Project name or \'.\' to cancel [' + CL_DEF + loaded_project + CL_TXT + ']: ' + CL_E)
+	user = raw_input( CL_TXT + 'Project name or \'.\' to cancel (g=generate) [' + CL_DEF + loaded_project + CL_TXT + ']: ' + CL_E)
+	if user == 'g':
+		gen_company_name = (obj.project_company + ' ') if obj.project_company else ''
+		gen_date = datetime.datetime.now().strftime('%Y-%m-%d ')
+		gen_project_name = obj.project_name
+		gen_filename = gen_company_name + gen_date + gen_project_name
+		user = raw_input( CL_TXT + 'Project name \'.\' to cancel [' + CL_DEF + gen_filename + CL_TXT + ']: ' + CL_E)
+		if not user:
+			user = gen_filename
 	if not user == '.':
 		if not user:
 			user = loaded_project
@@ -196,6 +208,7 @@ def Saver(obj):
 			Saver.append( obj.Wage )
 			Saver.append( obj.project_round )
 			Saver.append( obj.project_commodity )
+			Saver.append( obj.project_company )
 			SaveObject(Saver, file_name)
 			loaded_project = loaded_project_tmp
 
@@ -248,7 +261,7 @@ def preset_choser(what, preset, title='', comment=''):
 			comment_tmp = raw_input(CL_TXT + 'Comment [' + CL_DEF + comment + CL_TXT + ']: ' + CL_E)
 			if comment_tmp:
 				comment = comment_tmp
-			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + '] : ' + CL_E)
+			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + ']: ' + CL_E)
 			try:
 				amount = float(amount.replace(',', '.')) or 1.0
 			except Exception, e:
@@ -261,7 +274,7 @@ def preset_choser(what, preset, title='', comment=''):
 			comment_tmp = raw_input(CL_TXT + 'Comment [' + CL_DEF + comment + CL_TXT + ']: ' + CL_E)
 			if comment_tmp:
 				comment = comment_tmp
-			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + '] : ' + CL_E)
+			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + ']: ' + CL_E)
 			try:
 				amount = float(amount.replace(',', '.')) or 1.0
 			except Exception, e:
@@ -329,6 +342,7 @@ class Entries_Class(object):
 		self.project_offer_filename = def_project_offer_filename
 		self.project_round = True
 		self.project_commodity = def_commodity
+		self.project_company = def_project_company
 		self.list = []
 		self.mods = []
 		self.Wage = 40
@@ -352,15 +366,15 @@ class Entries_Class(object):
 
 				which = int(which)
 
-				title = raw_input(CL_TXT + 'Title [' + CL_DEF + self.list[which].title + CL_TXT + '] : ' + CL_E)
+				title = raw_input(CL_TXT + 'Title [' + CL_DEF + self.list[which].title + CL_TXT + ']: ' + CL_E)
 				title = title or self.list[which].title
 				self.list[which].title = title
 
-				comment = raw_input(CL_TXT + 'Comment [' + CL_DEF + self.list[which].comment + CL_TXT + '] : ' + CL_E)
+				comment = raw_input(CL_TXT + 'Comment [' + CL_DEF + self.list[which].comment + CL_TXT + ']: ' + CL_E)
 				comment = comment or self.list[which].comment
 				self.list[which].comment = comment
 
-				h = raw_input(CL_TXT + 'H / Amount [' + CL_DEF + str(self.list[which].h) + CL_TXT + '] : ' + CL_E)
+				h = raw_input(CL_TXT + 'H / Amount [' + CL_DEF + str(self.list[which].h) + CL_TXT + ']: ' + CL_E)
 				if h == 'e':
 					h = self.hCalc()
 				else:
@@ -370,7 +384,7 @@ class Entries_Class(object):
 						h = self.list[which].h
 				self.list[which].h = h
 
-				amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + str(self.list[which].amount) + CL_TXT + '] : ' + CL_E)
+				amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + str(self.list[which].amount) + CL_TXT + ']: ' + CL_E)
 				try:
 					amount = float(amount.replace(',', '.'))
 				except Exception, e:
@@ -386,29 +400,29 @@ class Entries_Class(object):
 
 				which = int(which) - len(self.list)
 
-				title = raw_input(CL_TXT + 'Title ['  + CL_DEF + self.mods[which].title + CL_TXT + '] : ' + CL_E)
+				title = raw_input(CL_TXT + 'Title ['  + CL_DEF + self.mods[which].title + CL_TXT + ']: ' + CL_E)
 				title = title or self.mods[which].title
 				self.mods[which].title = title
 
-				comment = raw_input(CL_TXT + 'Comment ['  + CL_DEF + self.mods[which].comment + CL_TXT + '] : ' + CL_E)
+				comment = raw_input(CL_TXT + 'Comment ['  + CL_DEF + self.mods[which].comment + CL_TXT + ']: ' + CL_E)
 				comment = comment or self.mods[which].comment
 				self.mods[which].comment = comment
 
-				multi = raw_input(CL_TXT + 'Multiplicator [' + CL_DEF + str(self.mods[which].multi) + CL_TXT + '] : ' + CL_E)
+				multi = raw_input(CL_TXT + 'Multiplicator [' + CL_DEF + str(self.mods[which].multi) + CL_TXT + ']: ' + CL_E)
 				try:
 					multi = float(multi.replace(',', '.'))
 				except Exception, e:
 					multi = self.mods[which].multi
 				self.mods[which].multi = multi
 
-				amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + str(self.mods[which].amount) + CL_TXT + '] : ' + CL_E)
+				amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + str(self.mods[which].amount) + CL_TXT + ']: ' + CL_E)
 				try:
 					amount = float(amount.replace(',', '.'))
 				except Exception, e:
 					amount = self.mods[which].amount
 				self.mods[which].amount = amount
 
-				entries = raw_input(CL_TXT + 'Entries [' + CL_DEF + self.entries_to_index(self.mods[which].entries) + CL_TXT + '] : ' + CL_E)
+				entries = raw_input(CL_TXT + 'Entries [' + CL_DEF + self.entries_to_index(self.mods[which].entries) + CL_TXT + ']: ' + CL_E)
 				if entries:
 					try:
 						entries = tuple(entries.split(','))
@@ -419,7 +433,7 @@ class Entries_Class(object):
 					entries = self.mods[which].entries
 				self.mods[which].entries = entries
 
-				time = raw_input(CL_TXT + 'Time [' + CL_DEF + self.mods[which].getTime_status() + CL_TXT + '] : ' + CL_E)
+				time = raw_input(CL_TXT + 'Time [' + CL_DEF + self.mods[which].getTime_status() + CL_TXT + ']: ' + CL_E)
 				if time:
 					if time.lower() == 'y' or time.lower() == 'yes':
 						time = True
@@ -436,12 +450,12 @@ class Entries_Class(object):
 			self.mods.append( Single_Mod_Class(title=title, multi=multi, entries=entries, time=time, comment=comment, amount=amount) )
 
 	def hCalc(self):
-		h_unit = raw_input(CL_TXT + '-- H / unit [' + CL_DEF + '0.4' + CL_TXT + '] : ' + CL_E)
+		h_unit = raw_input(CL_TXT + '-- H / unit [' + CL_DEF + '0.4' + CL_TXT + ']: ' + CL_E)
 		try:
 			h_unit = float(h_unit.replace(',', '.'))
 		except Exception, e:
 			h_unit = 0.4
-		units = raw_input(CL_TXT + '-- units [' + CL_DEF + '1' + CL_TXT + '] : ' + CL_E)
+		units = raw_input(CL_TXT + '-- units [' + CL_DEF + '1' + CL_TXT + ']: ' + CL_E)
 		try:
 			unit = float(unit.replace(',', '.'))
 		except Exception, e:
@@ -452,12 +466,12 @@ class Entries_Class(object):
 
 	def add_edit(self, what):
 		if what == 'entry':
-			title = raw_input(CL_TXT + 'Title [' + CL_DEF + 'Music' + CL_TXT + '] : ' + CL_E)
+			title = raw_input(CL_TXT + 'Title [' + CL_DEF + 'Music' + CL_TXT + ']: ' + CL_E)
 			title = title or 'Music'
 
-			comment = raw_input(CL_TXT + 'Comment [] : ' + CL_E)
+			comment = raw_input(CL_TXT + 'Comment []: ' + CL_E)
 
-			h = raw_input(CL_TXT + 'H / Amount [' + CL_DEF + '1.6' + CL_TXT + '] : ' + CL_E)
+			h = raw_input(CL_TXT + 'H / Amount [' + CL_DEF + '1.6' + CL_TXT + ']: ' + CL_E)
 			if h == 'e':
 				h = self.hCalc()
 			else:
@@ -466,7 +480,7 @@ class Entries_Class(object):
 				except Exception, e:
 					h = 1.6
 
-			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + '] : ' + CL_E)
+			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + ']: ' + CL_E)
 			try:
 				amount = float(amount.replace(',', '.'))
 			except Exception, e:
@@ -474,24 +488,24 @@ class Entries_Class(object):
 
 			self.add(what=what, title=title, h=h, amount=amount, comment=comment)
 		elif what == 'mod':
-			title = raw_input(CL_TXT + 'Title [' + CL_DEF + 'Exclusive' + CL_TXT + '] : ' + CL_E)
+			title = raw_input(CL_TXT + 'Title [' + CL_DEF + 'Exclusive' + CL_TXT + ']: ' + CL_E)
 			title = title or 'Exclusive'
 
-			comment = raw_input(CL_TXT + 'Comment [] : ' + CL_E)
+			comment = raw_input(CL_TXT + 'Comment []: ' + CL_E)
 
-			multi = raw_input(CL_TXT + 'Multiplicator [' + CL_DEF + '3.0' + CL_TXT + '] : ' + CL_E)
+			multi = raw_input(CL_TXT + 'Multiplicator [' + CL_DEF + '3.0' + CL_TXT + ']: ' + CL_E)
 			try:
 				multi = float(multi.replace(',', '.'))
 			except Exception, e:
 				multi = 3
 
-			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + '] : ' + CL_E)
+			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + ']: ' + CL_E)
 			try:
 				amount = float(amount.replace(',', '.'))
 			except Exception, e:
 				amount = 1.0
 
-			entries = raw_input(CL_TXT + 'Entries [] : ' + CL_E)
+			entries = raw_input(CL_TXT + 'Entries []: ' + CL_E)
 			if entries:
 				try:
 					entries = tuple(entries.split(','))
@@ -501,7 +515,7 @@ class Entries_Class(object):
 			else:
 				entries = []
 
-			time = raw_input(CL_TXT + 'Time [' + CL_DEF + 'no' + CL_TXT + '] : ' + CL_E)
+			time = raw_input(CL_TXT + 'Time [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E)
 			if time:
 				if time.lower() == 'y' or time.lower() == 'yes':
 					time = True
@@ -592,23 +606,30 @@ class Entries_Class(object):
 
 		print CL_TXT + 'Enter clients information:' + CL_E
 
-		user = raw_input(CL_TXT + 'Client title [' + CL_DEF + self.project_client_title + CL_TXT + '] : ' + CL_E)
+		user = raw_input(CL_TXT + 'Company name [' + CL_DEF + self.project_company + CL_TXT + ']: ' + CL_E)
+		if user:
+			if user == '-':
+				self.project_company = ''
+			else:
+				self.project_company = user
+
+		user = raw_input(CL_TXT + 'Client title [' + CL_DEF + self.project_client_title + CL_TXT + ']: ' + CL_E)
 		if user:
 			self.project_client_title = user
 
-		user = raw_input(CL_TXT + 'Client name [' + CL_DEF + self.project_client_name + CL_TXT + '] : ' + CL_E)
+		user = raw_input(CL_TXT + 'Client name [' + CL_DEF + self.project_client_name + CL_TXT + ']: ' + CL_E)
 		if user:
 			self.project_client_name = user
 
-		user = raw_input(CL_TXT + 'Client address [' + CL_DEF + self.project_client_address + CL_TXT + '] : ' + CL_E)
+		user = raw_input(CL_TXT + 'Client address [' + CL_DEF + self.project_client_address + CL_TXT + ']: ' + CL_E)
 		if user:
 			self.project_client_address = user
 
-		user = raw_input(CL_TXT + 'Client city [' + CL_DEF + self.project_client_city + CL_TXT + '] : ' + CL_E)
+		user = raw_input(CL_TXT + 'Client city [' + CL_DEF + self.project_client_city + CL_TXT + ']: ' + CL_E)
 		if user:
 			self.project_client_city = user
 
-		user = raw_input(CL_TXT + 'Project name [' + CL_DEF + self.project_name + CL_TXT + '] : ' + CL_E)
+		user = raw_input(CL_TXT + 'Project name [' + CL_DEF + self.project_name + CL_TXT + ']: ' + CL_E)
 		if user:
 			self.project_name = user
 			loaded_project = user
@@ -616,10 +637,10 @@ class Entries_Class(object):
 
 		self.project_offer_filename = self.project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', self.project_name.replace(' ', '_'))
 		def_choice = False
-		user = raw_input(CL_TXT + 'Offer output file (d=default) [' + CL_DEF + self.project_offer_filename + CL_TXT + '] : ' + CL_E)
-		if user == 'd':
+		user = raw_input(CL_TXT + 'Offer output file (g=generate) [' + CL_DEF + self.project_offer_filename + CL_TXT + ']: ' + CL_E)
+		if user == 'g':
 			def_generated_filename = def_project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', self.project_name.replace(' ', '_'))
-			user2 = raw_input(CL_TXT + 'Offer output file [' + CL_DEF + def_generated_filename + CL_TXT + '] : ' + CL_E)
+			user2 = raw_input(CL_TXT + 'Offer output file [' + CL_DEF + def_generated_filename + CL_TXT + ']: ' + CL_E)
 			if user2 and check_file_exists(user2):
 				self.project_offer_filename = user2
 			else:
@@ -629,14 +650,14 @@ class Entries_Class(object):
 				self.project_offer_filename = user
 
 		tmp_round = 'yes' if self.project_round else 'no'
-		user = raw_input(CL_TXT + 'Round exported output? [' + CL_DEF + tmp_round + CL_TXT + '] : ' + CL_E)
+		user = raw_input(CL_TXT + 'Round exported output? [' + CL_DEF + tmp_round + CL_TXT + ']: ' + CL_E)
 		if user:
 			if user == 'y' or user == 'yes':
 				self.project_round = True
 			else:
 				self.project_round = False
 
-		user = raw_input(CL_TXT + 'Commodity [' + CL_DEF + self.project_commodity + CL_TXT + '] :' + CL_E)
+		user = raw_input(CL_TXT + 'Commodity [' + CL_DEF + self.project_commodity + CL_TXT + ']:' + CL_E)
 		if user:
 			self.project_commodity = user
 
@@ -645,7 +666,7 @@ class Entries_Class(object):
 	def export_to_odt(self):
 		if secretary_available:
 			self.project_offer_filename = self.project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', self.project_name.replace(' ', '_'))
-			user = raw_input(CL_TXT + 'Filename for export [' + CL_DEF + self.project_offer_filename + CL_TXT + '] : ' + CL_E)
+			user = raw_input(CL_TXT + 'Filename for export [' + CL_DEF + self.project_offer_filename + CL_TXT + ']: ' + CL_E)
 			if not user == '.':
 				if not user:
 					user = self.project_offer_filename

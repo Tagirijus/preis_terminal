@@ -5,6 +5,7 @@ path_to_project = os.path.dirname(os.path.realpath(__file__))
 
 # some default values
 
+def_project_company			= ''
 def_project_client_title 	= 'Herr'
 def_project_client_name 	= 'Max Mustermann'
 def_project_client_address 	= 'Straße 5b'
@@ -13,6 +14,7 @@ def_project_client_city 	= '47209 Stadt'
 def_project_name		 	= 'Projekt X'
 def_project_offer_filename 	= 'Angebot_{YEAR}_-_{PROJECT_NAME}.odt'
 offer_template_filename		= path_to_project + '/template.odt'
+def_project_save_name		= '{COMPANY}_{DATE}_{PROJECT_NAME}'
 
 date_format					= '%d.%m.%Y'
 decimal						= ','
