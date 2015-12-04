@@ -155,6 +155,8 @@ def Loader():
 						Entries.project_commodity = Loader[10]
 					if len(Loader) > 11:
 						Entries.project_company = Loader[11]
+					if len(Loader) > 12:
+						Entries.fixed = Loader[12]
 					loaded_project = project_names[int(user)]
 		else:
 			print CL_INF + 'No projects exists.' + CL_E
@@ -210,6 +212,7 @@ def Saver(obj):
 			Saver.append( obj.project_round )
 			Saver.append( obj.project_commodity )
 			Saver.append( obj.project_company )
+			Saver.append( obj.fixed )
 			SaveObject(Saver, file_name)
 			loaded_project = loaded_project_tmp
 
