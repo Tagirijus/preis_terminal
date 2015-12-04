@@ -110,6 +110,8 @@ def Loader():
 			if '.preis_t' in x and not x[0:1] == '_':
 				project_files.append( path_to_project + '/projects/' + x )
 				project_names.append( x.replace('.preis_t', '').replace('_', ' ') )
+		project_files = sorted(project_files)
+		project_names = sorted(project_names)
 		if len(project_files) > 0:
 			print CL_TXT + 'Projects:' + CL_E
 			print
@@ -499,7 +501,7 @@ class Entries_Class(object):
 			else:
 				entries = []
 
-			time = raw_input(CL_TXT + 'Time [' + CL_DEF + 'False' + CL_TXT + '] : ' + CL_E)
+			time = raw_input(CL_TXT + 'Time [' + CL_DEF + 'no' + CL_TXT + '] : ' + CL_E)
 			if time:
 				if time.lower() == 'y' or time.lower() == 'yes':
 					time = True
@@ -613,19 +615,26 @@ class Entries_Class(object):
 
 
 		self.project_offer_filename = self.project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', self.project_name.replace(' ', '_'))
-		user = raw_input(CL_TXT + 'Offer output file [' + CL_DEF + self.project_offer_filename + CL_TXT + '] : ' + CL_E)
-		if user and check_file_exists(user):
-			self.project_offer_filename = user
+		def_choice = False
+		user = raw_input(CL_TXT + 'Offer output file (d=default) [' + CL_DEF + self.project_offer_filename + CL_TXT + '] : ' + CL_E)
+		if user == 'd':
+			def_generated_filename = def_project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', self.project_name.replace(' ', '_'))
+			user2 = raw_input(CL_TXT + 'Offer output file [' + CL_DEF + def_generated_filename + CL_TXT + '] : ' + CL_E)
+			if user2 and check_file_exists(user2):
+				self.project_offer_filename = user2
+			else:
+				self.project_offer_filename = def_generated_filename
+		else:
+			if user and check_file_exists(user):
+				self.project_offer_filename = user
 
 		tmp_round = 'yes' if self.project_round else 'no'
-		user = raw_input(CL_TXT + 'Round exported output? [' + CL_DEF + tmp_round + CL_TXT + '] :' + CL_E)
+		user = raw_input(CL_TXT + 'Round exported output? [' + CL_DEF + tmp_round + CL_TXT + '] : ' + CL_E)
 		if user:
 			if user == 'y' or user == 'yes':
 				self.project_round = True
 			else:
 				self.project_round = False
-		else:
-			self.project_round = False
 
 		user = raw_input(CL_TXT + 'Commodity [' + CL_DEF + self.project_commodity + CL_TXT + '] :' + CL_E)
 		if user:
