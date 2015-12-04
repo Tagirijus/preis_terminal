@@ -102,7 +102,7 @@ def LoadObject(file):
 
 
 def Loader():
-	global loaded_project
+	global loaded_project, Entries
 
 	if os.path.isdir(path_to_project + '/projects'):
 		all_in_dir = os.listdir(path_to_project + '/projects')
@@ -129,6 +129,7 @@ def Loader():
 						os.rename( project_files[int(user)], project_files[int(user)].replace(path_to_project + '/projects/', path_to_project + '/projects/_') )
 						load_it = False
 				if load_it:
+					Entries = Entries_Class()
 					Loader = LoadObject( project_files[int(user)] )
 					if len(Loader) > 0:
 						Entries.project_client_name = Loader[0]
