@@ -1,6 +1,6 @@
 # coding=utf-8
 
-import os, sys, shutil, uuid, imp, pickle, datetime
+import os, sys, shutil, uuid, imp, datetime
 from tabulate import tabulate
 
 try:
@@ -63,6 +63,12 @@ date_format		 			= configuration.date_format
 decimal			 			= configuration.decimal
 def_commodity	 			= configuration.def_commodity
 
+old_filetype_save			= configuration.old_filetype_save
+old_filetype_load			= configuration.old_filetype_load
+
+if old_filetype_load or old_filetype_save:
+	import pickle
+
 colorize = configuration.colorize
 
 CL_TXT = configuration.CL_TXT
@@ -82,6 +88,9 @@ CL_E = configuration.CL_E
 
 
 # functions
+
+def str2bool(str):
+	return str.lower() in ('true', '1')
 
 def check_file_exists(the_file):
 	if os.path.isfile(the_file):
@@ -164,6 +173,258 @@ def Loader():
 	else:
 		print CL_INF + 'No projects exists.' + CL_E
 		print
+
+
+def Loader_New():
+	global loaded_project, Entries
+
+	if os.path.isdir(path_to_project + '/projects'):
+		all_in_dir = os.listdir(path_to_project + '/projects')
+		project_files = []
+		project_names = []
+		for x in all_in_dir:
+			if '.preis_t' in x and not x[0:1] == '_':
+				project_files.append( path_to_project + '/projects/' + x )
+				project_names.append( x.replace('.preis_t', '').replace('_', ' ') )
+		project_files = sorted(project_files)
+		project_names = sorted(project_names)
+		if len(project_files) > 0:
+			print CL_TXT + 'Projects:' + CL_E
+			print
+			for y, x in enumerate(project_names):
+				print CL_TXT + '(' + str(y) + ') ' + x + CL_E
+			print
+			user = raw_input(CL_TXT + 'Chose project [' + CL_DEF + 'none' + CL_TXT + ']: ' + CL_E)
+			if user:
+				load_it = True
+				user2 = raw_input(CL_INF + 'Delete? [' + CL_DEF + 'no' + CL_INF + ']: ' + CL_E)
+				if user2:
+					if user2 == 'y' or user2 == 'yes':
+						os.rename( project_files[int(user)], project_files[int(user)].replace(path_to_project + '/projects/', path_to_project + '/projects/_') )
+						load_it = False
+
+				if load_it:
+					Entries = Entries_Class()
+
+					f = open(project_files[int(user)], 'r')
+					loaded_content = f.read().splitlines()
+					f.close()
+
+					loaded_project = []
+					loaded_entries = []
+					loaded_mods = []
+					loaded_fixed = []
+					for y, x in enumerate(loaded_content):
+						if x == '[PROJECT]':
+							load_project_start = y+1
+						elif x == '[ENTRIES]':
+							load_project_end = y
+							load_entries_start = y+1
+						elif x == '[MODIFIER]':
+							load_entries_end = y
+							load_mods_start = y+1
+						elif x == '[FIXED]':
+							load_mods_end = y
+							load_fixed_start = y+1
+						elif x == '[END]':
+							load_fixed_end = y
+
+					loaded_project.extend( loaded_content[ load_project_start : load_project_end ] )
+					loaded_entries.extend( loaded_content[ load_entries_start : load_entries_end ] )
+					loaded_mods.extend( loaded_content[ load_mods_start : load_mods_end ] )
+					loaded_fixed.extend( loaded_content[ load_fixed_start : load_fixed_end ] )
+
+
+					# load project settings
+					# company, client title, name, address, city, project name, offer filename, round, commodity, wage
+					if len(loaded_project) > 0:
+						Entries.project_company = loaded_project[0]
+					if len(loaded_project) > 1:
+						Entries.project_client_title = loaded_project[1]
+					if len(loaded_project) > 2:
+						Entries.project_client_name = loaded_project[2]
+					if len(loaded_project) > 3:
+						Entries.project_client_address = loaded_project[3]
+					if len(loaded_project) > 4:
+						Entries.project_client_city = loaded_project[4]
+					if len(loaded_project) > 5:
+						Entries.project_name = loaded_project[5]
+					if len(loaded_project) > 6:
+						Entries.project_offer_filename = loaded_project[6]
+					if len(loaded_project) > 7:
+						Entries.project_round = str2bool(loaded_project[7])
+					if len(loaded_project) > 8:
+						Entries.project_commodity = loaded_project[8]
+					if len(loaded_project) > 9:
+						try:
+							Entries.Wage = float(loaded_project[9])
+						except Exception, e:
+							pass
+
+					# load entries
+					for x in loaded_entries:
+						Entries.list.append( Single_Entry_Class() )
+						y = x.split('´')
+						if len(y) > 0:
+							Entries.list[ len( Entries.list ) - 1 ].title = y[0]
+						if len(y) > 1:
+							Entries.list[ len( Entries.list ) - 1 ].comment = y[1]
+						if len(y) > 2:
+							try:
+								Entries.list[ len( Entries.list ) - 1 ].h = float(y[2])
+							except Exception, e:
+								pass
+						if len(y) > 3:
+							try:
+								Entries.list[ len( Entries.list ) - 1 ].amount = float(y[3])
+							except Exception, e:
+								pass
+						if len(y) > 4:
+							Entries.list[ len( Entries.list ) - 1 ].id = y[4]
+
+					# load modifier
+					for x in loaded_mods:
+						Entries.mods.append( Single_Mod_Class() )
+						y = x.split('´')
+						if len(y) > 0:
+							Entries.mods[ len( Entries.mods ) - 1 ].title = y[0]
+						if len(y) > 1:
+							Entries.mods[ len( Entries.mods ) - 1 ].comment = y[1]
+						if len(y) > 2:
+							try:
+								Entries.mods[ len( Entries.mods ) - 1 ].multi = float(y[2])
+							except Exception, e:
+								pass
+						if len(y) > 3:
+							try:
+								Entries.mods[ len( Entries.mods ) - 1 ].time = float(y[3])
+							except Exception, e:
+								pass
+						if len(y) > 4:
+							try:
+								Entries.mods[ len( Entries.mods ) - 1 ].amount = float(y[4])
+							except Exception, e:
+								pass
+						if len(y) > 5:
+							try:
+								Entries.mods[ len( Entries.mods ) - 1 ].entries = eval(y[5])
+							except Exception, e:
+								pass
+
+					# load fixed
+					for x in loaded_fixed:
+						Entries.fixed.append( Single_Fixed_Class() )
+						y = x.split('´')
+						if len(y) > 0:
+							Entries.fixed[ len( Entries.fixed ) - 1 ].title = y[0]
+						if len(y) > 1:
+							Entries.fixed[ len( Entries.fixed ) - 1 ].comment = y[1]
+						if len(y) > 2:
+							try:
+								Entries.fixed[ len( Entries.fixed ) - 1 ].time = float(y[2])
+							except Exception, e:
+								pass
+						if len(y) > 3:
+							try:
+								Entries.fixed[ len( Entries.fixed ) - 1 ].price = float(y[3])
+							except Exception, e:
+								pass
+						if len(y) > 4:
+							try:
+								Entries.fixed[ len( Entries.fixed ) - 1 ].amount = float(y[4])
+							except Exception, e:
+								pass
+
+					loaded_project = project_names[int(user)]
+
+		else:
+			print CL_INF + 'No projects exists.' + CL_E
+			print
+	else:
+		print CL_INF + 'No projects exists.' + CL_E
+		print
+
+
+def Saver_New(obj):
+	global loaded_project
+
+	user = raw_input( CL_TXT + 'Project name or \'.\' to cancel (g=generate) [' + CL_DEF + loaded_project + CL_TXT + ']: ' + CL_E)
+	if user == 'g':
+		gen_company_name = (obj.project_company + ' ') if obj.project_company else ''
+		gen_date = datetime.datetime.now().strftime('%Y-%m-%d ')
+		gen_project_name = obj.project_name
+		gen_filename = gen_company_name + gen_date + gen_project_name
+		user = raw_input( CL_TXT + 'Project name \'.\' to cancel [' + CL_DEF + gen_filename + CL_TXT + ']: ' + CL_E)
+		if not user:
+			user = gen_filename
+	if not user == '.':
+		if not user:
+			user = loaded_project
+		loaded_project_tmp = user
+		user = user.replace(' ', '_')
+		if not os.path.isdir(path_to_project + '/projects'):
+			os.makedirs(path_to_project + '/projects')
+		file_name = path_to_project + '/projects/' + user + '.preis_t'
+		write_it = False
+		if os.path.isfile(file_name):
+			user2 = raw_input( CL_INF + 'Overwrite? [' + CL_DEF + 'no' + CL_INF + ']: ' + CL_E)
+			if user2 == 'y' or user2 == 'yes':
+				write_it = True
+		else:
+			write_it = True
+		if write_it:
+			save_output = ''
+
+			# save project settings
+			# company, client title, name, address, city, project name, offer filename, round, commodity, wage
+			save_output += '[PROJECT]\n'
+			save_output += obj.project_company + '\n'
+			save_output += obj.project_client_title + '\n'
+			save_output += obj.project_client_name + '\n'
+			save_output += obj.project_client_address + '\n'
+			save_output += obj.project_client_city + '\n'
+			save_output += obj.project_name + '\n'
+			save_output += obj.project_offer_filename + '\n'
+			save_output += str(obj.project_round) + '\n'
+			save_output += obj.project_commodity + '\n'
+			save_output += str(obj.Wage) + '\n'
+
+			# save list
+			save_output += '[ENTRIES]\n'
+			for x in obj.list:
+				save_output += x.title + '´'
+				save_output += x.comment + '´'
+				save_output += str(x.h) + '´'
+				save_output += str(x.amount) + '´'
+				save_output += x.id + '\n'
+
+			# save mods
+			save_output += '[MODIFIER]\n'
+			for x in obj.mods:
+				save_output += x.title + '´'
+				save_output += x.comment + '´'
+				save_output += str(x.multi) + '´'
+				save_output += str(x.time) + '´'
+				save_output += str(x.amount) + '´'
+				save_output += str(x.entries) + '\n'
+
+			# save fixed
+			save_output += '[FIXED]\n'
+			for x in obj.fixed:
+				save_output += x.title + '´'
+				save_output += x.comment + '´'
+				save_output += str(x.time) + '´'
+				save_output += str(x.price) + '´'
+				save_output += str(x.amount) + '\n'
+
+			# end of save file
+			save_output += '[END]'
+
+			f = open(file_name, 'w')
+			f.write(save_output)
+			f.close()
+
+			loaded_project = loaded_project_tmp
 
 
 def SaveObject(obj, file):
@@ -355,6 +616,7 @@ if os.path.isfile(cur_dir + '/presets.preis_presets'):
 
 class Entries_Class(object):
 	def __init__(self):
+		self.project_company = def_project_company
 		self.project_client_title = def_project_client_title
 		self.project_client_name = def_project_client_name
 		self.project_client_address = def_project_client_address
@@ -363,14 +625,13 @@ class Entries_Class(object):
 		self.project_offer_filename = def_project_offer_filename
 		self.project_round = True
 		self.project_commodity = def_commodity
-		self.project_company = def_project_company
-		self.list = []
-		self.mods = []
-		self.fixed = []
 		self.Wage = 40
 		self.Wage_Pro = 40
 		self.Wage_Edu = 33
 		self.Wage_Low = 25
+		self.list = []
+		self.mods = []
+		self.fixed = []
 
 	def count(self):
 		return len(self.fixed) + len(self.list) + len(self.mods)
@@ -830,13 +1091,14 @@ class Entries_Class(object):
 		print
 
 
+
 class Single_Entry_Class(object):
-	def __init__(self, title='Music', h=1.6, amount=1, comment=''):
+	def __init__(self, title='Music', h=1.6, amount=1, comment='', ident=''):
 		self.title = title
 		self.comment = comment
 		self.h = h
 		self.amount = amount
-		self.id = str(uuid.uuid1())
+		self.id = str(uuid.uuid1()) if not ident else ident
 
 	def getTime(self):
 		return round(self.amount * self.h, 2)
@@ -849,7 +1111,7 @@ class Single_Entry_Class(object):
 
 
 class Single_Mod_Class(object):
-	def __init__(self, title='Exclusive', multi=3, time=False, entries=(), comment='', amount=1):
+	def __init__(self, title='Exclusive', multi=3, time=False, entries=[], comment='', amount=1):
 		self.title = title
 		self.comment = comment
 		self.multi = multi
@@ -993,12 +1255,18 @@ while user != 'exit' and user != 'e' and user != '.':
 	# save the project
 	elif user == 'save' or user == 's':
 		print
-		Saver(Entries)
+		if old_filetype_save:
+			Saver(Entries)
+		else:
+			Saver_New(Entries)
 
 	# load the project
 	elif user == 'load' or user == 'l':
 		print
-		Loader()
+		if old_filetype_load:
+			Loader()
+		else:
+			Loader_New()
 
 	# exports the project
 	elif user == 'export' or user == 'exp':
