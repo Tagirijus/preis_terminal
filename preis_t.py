@@ -1,6 +1,6 @@
 # coding=utf-8
 
-import os, sys, shutil, uuid, imp, datetime
+import os, sys, uuid, imp, datetime
 from tabulate import tabulate
 
 try:
@@ -69,6 +69,7 @@ old_filetype_load			= configuration.old_filetype_load
 if old_filetype_load or old_filetype_save:
 	import pickle
 
+small_table = configuration.small_table
 colorize = configuration.colorize
 
 CL_TXT = configuration.CL_TXT
@@ -263,7 +264,7 @@ def Loader_New():
 
 					# load entries
 					for x in loaded_entries:
-						Entries.list.append( Single_Entry_Class() )
+						Entries.list.append( Single_Entry_Class(order=Entries.count()) )
 						y = x.split('´')
 						if len(y) > 0:
 							Entries.list[ len( Entries.list ) - 1 ].title = y[0]
@@ -281,10 +282,15 @@ def Loader_New():
 								pass
 						if len(y) > 4:
 							Entries.list[ len( Entries.list ) - 1 ].id = y[4]
+						if len(y) > 5:
+							try:
+								Entries.list[ len( Entries.list ) - 1 ].order = int(y[5])
+							except Exception, e:
+								pass
 
 					# load modifier
 					for x in loaded_mods:
-						Entries.mods.append( Single_Mod_Class() )
+						Entries.mods.append( Single_Mod_Class(order=Entries.count()) )
 						y = x.split('´')
 						if len(y) > 0:
 							Entries.mods[ len( Entries.mods ) - 1 ].title = y[0]
@@ -310,10 +316,17 @@ def Loader_New():
 								Entries.mods[ len( Entries.mods ) - 1 ].entries = eval(y[5])
 							except Exception, e:
 								pass
+						if len(y) > 6:
+							Entries.mods[ len( Entries.mods ) - 1 ].id = y[6]
+						if len(y) > 7:
+							try:
+								Entries.mods[ len( Entries.mods ) - 1 ].order = int(y[7])
+							except Exception, e:
+								pass
 
 					# load fixed
 					for x in loaded_fixed:
-						Entries.fixed.append( Single_Fixed_Class() )
+						Entries.fixed.append( Single_Fixed_Class(order=Entries.count()) )
 						y = x.split('´')
 						if len(y) > 0:
 							Entries.fixed[ len( Entries.fixed ) - 1 ].title = y[0]
@@ -332,6 +345,13 @@ def Loader_New():
 						if len(y) > 4:
 							try:
 								Entries.fixed[ len( Entries.fixed ) - 1 ].amount = float(y[4])
+							except Exception, e:
+								pass
+						if len(y) > 5:
+							Entries.fixed[ len( Entries.fixed ) - 1 ].id = y[5]
+						if len(y) > 6:
+							try:
+								Entries.fixed[ len( Entries.fixed ) - 1 ].order = int(y[6])
 							except Exception, e:
 								pass
 
@@ -396,7 +416,8 @@ def Saver_New(obj):
 				save_output += x.comment + '´'
 				save_output += str(x.h) + '´'
 				save_output += str(x.amount) + '´'
-				save_output += x.id + '\n'
+				save_output += x.id + '´'
+				save_output += str(x.order) + '\n'
 
 			# save mods
 			save_output += '[MODIFIER]\n'
@@ -406,7 +427,9 @@ def Saver_New(obj):
 				save_output += str(x.multi) + '´'
 				save_output += str(x.time) + '´'
 				save_output += str(x.amount) + '´'
-				save_output += str(x.entries) + '\n'
+				save_output += str(x.entries) + '´'
+				save_output += x.id + '´'
+				save_output += str(x.order) + '\n'
 
 			# save fixed
 			save_output += '[FIXED]\n'
@@ -415,7 +438,9 @@ def Saver_New(obj):
 				save_output += x.comment + '´'
 				save_output += str(x.time) + '´'
 				save_output += str(x.price) + '´'
-				save_output += str(x.amount) + '\n'
+				save_output += str(x.amount) + '´'
+				save_output += x.id + '´'
+				save_output += str(x.order) + '\n'
 
 			# end of save file
 			save_output += '[END]'
@@ -531,7 +556,7 @@ def preset_choser(what, preset, title='', comment=''):
 				amount = float(amount.replace(',', '.')) or 1.0
 			except Exception, e:
 				amount = 1.0
-			Entries.add(what='fix', title=title, h=float(preset['h']), price=float(preset['p']), amount=amount, comment=comment)
+			Entries.add(what='fix', title=title, h=float(preset['h']), price=float(preset['p']), amount=amount, comment=comment, order=Entries.count())
 		elif what == 'entry':
 			title_tmp = raw_input(CL_TXT + 'Title [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
 			if title_tmp:
@@ -544,7 +569,7 @@ def preset_choser(what, preset, title='', comment=''):
 				amount = float(amount.replace(',', '.')) or 1.0
 			except Exception, e:
 				amount = 1.0
-			Entries.add(what='entry', title=title, h=float(preset['h']), amount=amount, comment=comment)
+			Entries.add(what='entry', title=title, h=float(preset['h']), amount=amount, comment=comment, order=Entries.count())
 		elif what == 'mod':
 			title_tmp = raw_input(CL_TXT + 'Title [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
 			if title_tmp:
@@ -566,7 +591,7 @@ def preset_choser(what, preset, title='', comment=''):
 				entries = Entries.index_to_entries(entries)
 			else:
 				entries = []
-			Entries.add(what='mod', title=title, multi=float(preset['h']), time=bool(preset['t']), entries=entries, comment=comment, amount=amount)
+			Entries.add(what='mod', title=title, multi=float(preset['h']), time=bool(preset['t']), entries=entries, comment=comment, amount=amount, order=Entries.count())
 	else:
 		i = 0
 		c = []
@@ -636,38 +661,101 @@ class Entries_Class(object):
 	def count(self):
 		return len(self.fixed) + len(self.list) + len(self.mods)
 
-	def is_this_type(self, what='fix', where=0):
-		fix_start = 0
-		entry_start = len(self.fixed)
-		mod_start = len(self.fixed) + len(self.list)
-		ende = len(self.fixed) + len(self.list) + len(self.mods)
+	def is_this_type(self, what='fixed', where=0):
+		if what == 'fixed':
+			for y, x in enumerate(self.fixed):
+				if x.order == where:
+					return (True, y)
 
-		if what == 'fix':
-			if where < entry_start:
-				return True
+		elif what == 'entry':
+			for y, x in enumerate(self.list):
+				if x.order == where:
+					return (True, y)
 
-		if what == 'entry':
-			if where >= entry_start and where < mod_start:
-				return True
+		elif what == 'mod':
+			for y, x in enumerate(self.mods):
+				if x.order == where:
+					return (True, y)
 
-		if what == 'mod':
-			if where >= mod_start and where < ende:
-				return True
+		return (False, 0)
 
-		return False
+	def switch_order(self, from_order, to_order):
+		from_fixed = self.is_this_type('fixed', from_order)
+		from_entry = self.is_this_type('entry', from_order)
+		from_mod   = self.is_this_type('mod', from_order)
+		to_fixed = self.is_this_type('fixed', to_order)
+		to_entry = self.is_this_type('entry', to_order)
+		to_mod   = self.is_this_type('mod', to_order)
+
+		if from_fixed[0]:
+			self.fixed[from_fixed[1]].order = to_order
+		elif from_entry[0]:
+			self.list[from_entry[1]].order = to_order
+		elif from_mod[0]:
+			self.mods[from_mod[1]].order = to_order
+
+		if to_fixed[0]:
+			self.fixed[to_fixed[1]].order = from_order
+		elif to_entry[0]:
+			self.list[to_entry[1]].order = from_order
+		elif to_mod[0]:
+			self.mods[to_mod[1]].order = from_order
+
+	def reorder(self, from_order, to_order):
+		if from_order == to_order:
+			return
+		elif from_order < to_order:
+			start_order = from_order
+			while not start_order == to_order:
+				self.switch_order(start_order, start_order+1)
+				start_order += 1
+		elif from_order > to_order:
+			start_order = from_order
+			while not start_order == to_order:
+				self.switch_order(start_order, start_order-1)
+				start_order -= 1
+
+	def delete_it(self, delete):
+		is_fixed = self.is_this_type('fixed', delete)
+		is_entry = self.is_this_type('entry', delete)
+		is_mod   = self.is_this_type('mod', delete)
+
+		if delete == self.count()-1:
+			if is_fixed[0]:
+				self.fixed.pop(is_fixed[1])
+			elif is_entry[0]:
+				self.list.pop(is_entry[1])
+			elif is_mod[0]:
+				self.mods.pop(is_mod[1])
+		else:
+			self.reorder(delete, self.count()-1)
+			self.delete_it(self.count()-1)
 
 	def edit(self, which):
-		if type(which) is not str:
+		if type(which) is int:
+
+			is_fixed = self.is_this_type('fixed', which)
+			is_entry = self.is_this_type('entry', which)
+			is_mod   = self.is_this_type('mod', which)
 
 			# it's a fixed
-			if self.is_this_type('fix', which):
+			if is_fixed[0]:
+				old_which = which
+				which = is_fixed[1]
 
 				delete = raw_input(CL_TXT + 'Delete [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E)
 				if delete == 'yes' or delete == 'y':
-					self.fixed.pop(which)
+					#self.fixed.pop(which)
+					self.delete_it(old_which)
 					return
 
-				which = int(which)
+				order = raw_input(CL_TXT + 'Order [' + CL_DEF + str(old_which) + CL_TXT + ']: ' + CL_E)
+				if order:
+					try:
+						order = int(order)
+						self.reorder(old_which, order)
+					except Exception, e:
+						print CL_INF + 'Order not changed. Need integer.' + CL_E
 
 				title = raw_input(CL_TXT + 'Title [' + CL_DEF + self.fixed[which].title + CL_TXT + ']: ' + CL_E)
 				title = title or self.fixed[which].title
@@ -699,14 +787,23 @@ class Entries_Class(object):
 				self.fixed[which].amount = amount
 
 			# it's an entry
-			elif self.is_this_type('entry', which):
+			elif is_entry[0]:
+				old_which = which
+				which = is_entry[1]
 
 				delete = raw_input(CL_TXT + 'Delete [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E)
 				if delete == 'yes' or delete == 'y':
-					self.list.pop(which)
+					#self.list.pop(which)
+					self.delete_it(old_which)
 					return
 
-				which = int(which)
+				order = raw_input(CL_TXT + 'Order [' + CL_DEF + str(old_which) + CL_TXT + ']: ' + CL_E)
+				if order:
+					try:
+						order = int(order)
+						self.reorder(old_which, order)
+					except Exception, e:
+						print CL_INF + 'Order not changed. Need integer.' + CL_E
 
 				title = raw_input(CL_TXT + 'Title [' + CL_DEF + self.list[which].title + CL_TXT + ']: ' + CL_E)
 				title = title or self.list[which].title
@@ -734,13 +831,23 @@ class Entries_Class(object):
 				self.list[which].amount = amount
 
 			# it's a modulator
-			elif self.is_this_type('mod', which):
+			elif is_mod[0]:
+				old_which = which
+				which = is_mod[1]
+
 				delete = raw_input(CL_TXT + 'Delete [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E)
 				if delete == 'yes' or delete == 'y':
-					self.mods.pop(which - len(self.list))
+					#self.mods.pop(which)
+					self.delete_it(old_which)
 					return
 
-				which = int(which) - len(self.list)
+				order = raw_input(CL_TXT + 'Order [' + CL_DEF + str(old_which) + CL_TXT + ']: ' + CL_E)
+				if order:
+					try:
+						order = int(order)
+						self.reorder(old_which, order)
+					except Exception, e:
+						print CL_INF + 'Order not changed. Need integer.' + CL_E
 
 				title = raw_input(CL_TXT + 'Title ['  + CL_DEF + self.mods[which].title + CL_TXT + ']: ' + CL_E)
 				title = title or self.mods[which].title
@@ -785,13 +892,13 @@ class Entries_Class(object):
 					time = self.mods[which].time
 				self.mods[which].time = time
 
-	def add(self, what='entry', title='Music', h=1.6, amount=1.0, multi=0.2, entries=[], time=True, comment='', price=0.0):
+	def add(self, what='entry', title='Music', h=1.6, amount=1.0, multi=0.2, entries=[], time=True, comment='', price=0.0, order=0):
 		if what == 'entry':
-			self.list.append( Single_Entry_Class(title=title, h=h, amount=amount, comment=comment) )
+			self.list.append( Single_Entry_Class(title=title, h=h, amount=amount, comment=comment, order=order) )
 		elif what == 'mod':
-			self.mods.append( Single_Mod_Class(title=title, multi=multi, entries=entries, time=time, comment=comment, amount=amount) )
+			self.mods.append( Single_Mod_Class(title=title, multi=multi, entries=entries, time=time, comment=comment, amount=amount, order=order) )
 		elif what == 'fix':
-			self.fixed.append( Single_Fixed_Class(title=title, time=h, comment=comment, amount=amount, price=price) )
+			self.fixed.append( Single_Fixed_Class(title=title, time=h, comment=comment, amount=amount, price=price, order=order) )
 
 	def hCalc(self):
 		h_unit = raw_input(CL_TXT + '-- H / unit [' + CL_DEF + '0.4' + CL_TXT + ']: ' + CL_E)
@@ -833,7 +940,7 @@ class Entries_Class(object):
 			except Exception, e:
 				amount = 1.0
 
-			self.add(what=what, title=title, h=time, amount=amount, comment=comment, price=price)
+			self.add(what=what, title=title, h=time, amount=amount, comment=comment, price=price, order=self.count())
 
 		elif what == 'entry':
 			title = raw_input(CL_TXT + 'Title [' + CL_DEF + 'Music' + CL_TXT + ']: ' + CL_E)
@@ -856,7 +963,7 @@ class Entries_Class(object):
 			except Exception, e:
 				amount = 1.0
 
-			self.add(what=what, title=title, h=h, amount=amount, comment=comment)
+			self.add(what=what, title=title, h=h, amount=amount, comment=comment, order=self.count())
 
 		elif what == 'mod':
 			title = raw_input(CL_TXT + 'Title [' + CL_DEF + 'Exclusive' + CL_TXT + ']: ' + CL_E)
@@ -895,22 +1002,43 @@ class Entries_Class(object):
 			else:
 				time = False
 
-			self.add(what=what, title=title, multi=multi, entries=entries, time=time, comment=comment, amount=amount)
+			self.add(what=what, title=title, multi=multi, entries=entries, time=time, comment=comment, amount=amount, order=self.count())
 
 	def index_to_entries(self, entries):
 		out = []
 		for x in entries:
-			out.append( self.list[int(x)].id )
+			is_fixed = self.is_this_type('fixed', int(x))
+			is_entry = self.is_this_type('entry', int(x))
+			is_mod   = self.is_this_type('mod', int(x))
+
+			if is_fixed[0]:
+				out.append( self.fixed[ is_fixed[1] ].id )
+			elif is_entry[0]:
+				out.append( self.list[ is_entry[1] ].id )
+			elif is_mod[0]:
+				out.append( self.mods[ is_mod[1] ].id )
 		return out
 
 	def entries_to_index(self, entries):
 		out = ''
-		for x in self.list:
+		for y, x in enumerate(self.fixed):
 			if x.id in entries:
 				if out == '':
-					out = str(self.list.index(x))
+					out = str(self.fixed[y].order)
 				else:
-					out = out + ', ' + str(self.list.index(x))
+					out = out + ', ' + str(self.fixed[y].order)
+		for y, x in enumerate(self.list):
+			if x.id in entries:
+				if out == '':
+					out = str(self.list[y].order)
+				else:
+					out = out + ', ' + str(self.list[y].order)
+		for y, x in enumerate(self.mods):
+			if x.id in entries:
+				if out == '':
+					out = str(self.mods[y].order)
+				else:
+					out = out + ', ' + str(self.mods[y].order)
 		return out
 
 	def sum(self, round_it=False):
@@ -923,8 +1051,8 @@ class Entries_Class(object):
 			out_h += x.getTime()
 			out_p += x.getPrice(self.Wage, round_it)
 		for x in self.mods:
-			out_h += x.getTime(self.list)
-			out_p += x.getPrice(self.Wage, self.list, round_it)
+			out_h += x.getTime(self.fixed, self.list, self.mods)
+			out_p += x.getPrice(self.Wage, self.fixed, self.list, self.mods, round_it)
 		return [out_h, out_p]
 
 	def return_time(self, floaty):
@@ -934,27 +1062,30 @@ class Entries_Class(object):
 		minutes = str(minutes) if minutes > 9 else '0' + str(minutes)
 		return hours + ':' + minutes if floaty > 0.0 else '*'
 
-	def show_as_table(self, just_show=False, head=[CL_TXT + 'ID' + CL_E, CL_TXT + 'Title' + CL_E, CL_TXT + 'Amount' + CL_E, CL_TXT + 'H' + CL_E, CL_TXT + 'Price']):
+	def show_as_table(self, head=[CL_TXT + 'ID' + CL_E, CL_TXT + 'Title' + CL_E, CL_TXT + 'Amount' + CL_E, CL_TXT + 'H' + CL_E, CL_TXT + 'Price']):
 		show = []
 
 		i = 0
-		for x in self.fixed:
-			show.append( [CL_OUT + str(i) + CL_E, CL_OUT + unicode(x.title, 'utf-8') + CL_E, CL_OUT + str(x.amount) + CL_E, CL_OUT + str(self.return_time( x.time )) + CL_E, CL_OUT + str(x.getPrice()) + CL_E] )
-			i += 1
-		for x in self.list:
-			show.append( [CL_OUT + str(i) + CL_E, CL_OUT + unicode(x.title, 'utf-8') + CL_E, CL_OUT + str(x.amount) + CL_E, CL_OUT + str(self.return_time( x.getTime() )) + CL_E, CL_OUT + str(x.getPrice(self.Wage)) + CL_E] )
-			i += 1
-		for x in self.mods:
-			show.append( [CL_OUT + str(i) + CL_E, CL_OUT + unicode(x.title, 'utf-8') + CL_E, CL_OUT + str(x.amount) + ' *' + CL_E, CL_OUT + str(self.return_time( x.getTime(self.list) )) + CL_E, CL_OUT + str(x.getPrice(self.Wage, self.list)) + CL_E] )
-			i += 1
-		if not just_show:
+		for x in xrange(0,self.count()):
+			is_fixed = self.is_this_type('fixed', x)
+			is_entry = self.is_this_type('entry', x)
+			is_mod   = self.is_this_type('mod', x)
+
+			if is_fixed[0]:
+				show.append( [CL_OUT + str(x) + CL_E, CL_OUT + unicode(self.fixed[ is_fixed[1] ].title, 'utf-8') + CL_E, CL_OUT + str(self.fixed[ is_fixed[1] ].amount) + CL_E, CL_OUT + str(self.return_time( self.fixed[ is_fixed[1] ].time )) + CL_E, CL_OUT + str(self.fixed[ is_fixed[1] ].getPrice()) + CL_E] )
+			elif is_entry[0]:
+				show.append( [CL_OUT + str(x) + CL_E, CL_OUT + unicode(self.list[ is_entry[1] ].title, 'utf-8') + CL_E, CL_OUT + str(self.list[ is_entry[1] ].amount) + CL_E, CL_OUT + str(self.return_time( self.list[ is_entry[1] ].getTime() )) + CL_E, CL_OUT + str(self.list[ is_entry[1] ].getPrice(self.Wage)) + CL_E] )
+			elif is_mod[0]:
+				show.append( [CL_OUT + str(x) + CL_E, CL_OUT + unicode(self.mods[ is_mod[1] ].title, 'utf-8') + CL_E, CL_OUT + str(self.mods[ is_mod[1] ].amount) + ' *' + CL_E, CL_OUT + str(self.return_time( self.mods[ is_mod[1] ].getTime(self.fixed, self.list, self.mods) )) + CL_E, CL_OUT + str(self.mods[ is_mod[1] ].getPrice(self.Wage, self.fixed, self.list, self.mods)) + CL_E] )
+
+		if not small_table:
 			show.append( [CL_TXT + 'f' + CL_E, CL_TXT + '[New fixed]' + CL_E, CL_TXT + '...' + CL_E, CL_TXT + '?' + CL_E, CL_TXT + '?' + CL_E] )
 			show.append( [CL_TXT + 'a' + CL_E, CL_TXT + '[New entry]' + CL_E, CL_TXT + '...' + CL_E, CL_TXT + '?' + CL_E, CL_TXT + '?' + CL_E] )
 			show.append( [CL_TXT + 'm' + CL_E, CL_TXT + '[New mod]' + CL_E, CL_TXT + '...' + CL_E, CL_TXT + '?' + CL_E, CL_TXT + '?' + CL_E] )
-			show.append( [CL_TXT + '--' + CL_E, CL_TXT + '----' + CL_E, CL_TXT + '----' + CL_E, CL_TXT + '----' + CL_E, CL_TXT + '----' + CL_E])
-			show.append( [ '', '', '', CL_OUT + str(self.return_time( self.sum()[0] )) + CL_E, CL_OUT + str(self.sum()[1]) + CL_E])
-			if self.sum()[0] > 0:
-				show.append( [ '', '', '', '', CL_OUT + str( round(self.sum()[1] / self.sum()[0], 2) ) + ' E/h' + CL_E ])
+		show.append( [CL_TXT + '--' + CL_E, CL_TXT + '----' + CL_E, CL_TXT + '----' + CL_E, CL_TXT + '----' + CL_E, CL_TXT + '----' + CL_E])
+		show.append( [ '', '', '', CL_OUT + str(self.return_time( self.sum()[0] )) + CL_E, CL_OUT + str(self.sum()[1]) + CL_E])
+		if self.sum()[0] > 0:
+			show.append( [ '', '', '', '', CL_OUT + str( round(self.sum()[1] / self.sum()[0], 2) ) + ' E/h' + CL_E ])
 		print tabulate(show, head)
 		print
 
@@ -1065,14 +1196,18 @@ class Entries_Class(object):
 					client['sum'] = unicode(str(self.sum(self.project_round)[1]).replace('.', decimal).replace(',0', '') + ' ' + self.project_commodity, 'utf-8')
 
 					entries = []
-					for x in self.fixed:
-						entries.append( [unicode(x.title, 'utf-8'), unicode(str(x.amount).replace('.', decimal).replace(',0', ''), 'utf-8'), unicode(str(x.getPrice()).replace('.', decimal).replace(',0', '') + ' ' + self.project_commodity, 'utf-8'), unicode(x.comment or '-', 'utf-8') ] )
+					for x in xrange(0,self.count()):
+						is_fixed = self.is_this_type('fixed', x)
+						is_entry = self.is_this_type('entry', x)
+						is_mod   = self.is_this_type('mod', x)
 
-					for x in self.list:
-						entries.append( [unicode(x.title, 'utf-8'), unicode(str(x.amount).replace('.', decimal).replace(',0', ''), 'utf-8'), unicode(str(x.getPrice(self.Wage, self.project_round)).replace('.', decimal).replace(',0', '') + ' ' + self.project_commodity, 'utf-8'), unicode(x.comment or '-', 'utf-8') ] )
+						if is_fixed[0]:
+							entries.append( [unicode(self.fixed[ is_fixed[1] ].title, 'utf-8'), unicode(str(self.fixed[ is_fixed[1] ].amount).replace('.', decimal).replace(',0', ''), 'utf-8'), unicode(str(self.fixed[ is_fixed[1] ].getPrice()).replace('.', decimal).replace(',0', '') + ' ' + self.project_commodity, 'utf-8'), unicode(self.fixed[ is_fixed[1] ].comment or '-', 'utf-8') ] )
+						elif is_entry[0]:
+							entries.append( [unicode(self.list[ is_entry[1] ].title, 'utf-8'), unicode(str(self.list[ is_entry[1] ].amount).replace('.', decimal).replace(',0', ''), 'utf-8'), unicode(str(self.list[ is_entry[1] ].getPrice(self.Wage, self.project_round)).replace('.', decimal).replace(',0', '') + ' ' + self.project_commodity, 'utf-8'), unicode(self.list[ is_entry[1] ].comment or '-', 'utf-8') ] )
+						elif is_mod[0]:
+							entries.append( [unicode(self.mods[ is_mod[1] ].title, 'utf-8'), unicode(str(self.mods[ is_mod[1] ].amount).replace('.', decimal).replace(',0', ''), 'utf-8'), unicode(str(self.mods[ is_mod[1] ].getPrice(self.Wage, self.fixed, self.list, self.mods, self.project_round)).replace('.', decimal).replace(',0', '') + ' ' + self.project_commodity, 'utf-8'), unicode(self.mods[ is_mod[1] ].comment or '-', 'utf-8') ] )
 
-					for x in self.mods:
-						entries.append( [unicode(x.title, 'utf-8'), unicode(str(x.amount).replace('.', decimal).replace(',0', ''), 'utf-8'), unicode(str(x.getPrice(self.Wage, self.list, self.project_round)).replace('.', decimal).replace(',0', '') + ' ' + self.project_commodity, 'utf-8'), unicode(x.comment or '-', 'utf-8') ] )
 
 					# final endering
 					engine = secretary.Renderer()
@@ -1093,12 +1228,13 @@ class Entries_Class(object):
 
 
 class Single_Entry_Class(object):
-	def __init__(self, title='Music', h=1.6, amount=1, comment='', ident=''):
+	def __init__(self, title='Music', h=1.6, amount=1, comment='', order=0):
 		self.title = title
 		self.comment = comment
 		self.h = h
 		self.amount = amount
-		self.id = str(uuid.uuid1()) if not ident else ident
+		self.id = str(uuid.uuid1())
+		self.order = order
 
 	def getTime(self):
 		return round(self.amount * self.h, 2)
@@ -1111,13 +1247,15 @@ class Single_Entry_Class(object):
 
 
 class Single_Mod_Class(object):
-	def __init__(self, title='Exclusive', multi=3, time=False, entries=[], comment='', amount=1):
+	def __init__(self, title='Exclusive', multi=3, time=False, entries=[], comment='', amount=1, order=0):
 		self.title = title
 		self.comment = comment
 		self.multi = multi
 		self.time = time
 		self.amount = amount
 		self.entries = entries
+		self.id = str(uuid.uuid1())
+		self.order = order
 
 	def getTime_status(self):
 		if not self.time:
@@ -1126,42 +1264,59 @@ class Single_Mod_Class(object):
 			return 'yes'
 
 	def has_entry(self, list_entry):
-		if list_entry.id in self.entries:
+		is_not_in_others_entries = True
+		if type(list_entry) == Single_Mod_Class:
+			is_not_in_others_entries = not self.id in list_entry.entries
+		if list_entry.id in self.entries and not list_entry.id == self.id and is_not_in_others_entries:
 			return True
 		else:
 			return False
 
-	def getTime(self, list):
+	def getTime(self, list_fixed, list_entry, list_mod):
 		out = 0.0
-		for x in list:
+		for x in list_fixed:
 			if self.has_entry(x) and self.time:
 				out += x.getTime() * self.multi * self.amount
+		for x in list_entry:
+			if self.has_entry(x) and self.time:
+				out += x.getTime() * self.multi * self.amount
+		for x in list_mod:
+			if self.has_entry(x) and self.time:
+				out += x.getTime(list_fixed, list_entry, list_mod) * self.multi * self.amount
 		return round(out, 2)
 
-	def getPrice(self, wage, list, round_it=False):
+	def getPrice(self, wage, list_fixed, list_entry, list_mod, round_it=False):
+		out = 0.0
+		for x in list_fixed:
+			if self.has_entry(x):
+				out += x.getPrice(wage) * self.multi * self.amount
+		for x in list_entry:
+			if self.has_entry(x):
+				out += x.getPrice(wage) * self.multi * self.amount
+		for x in list_mod:
+			if self.has_entry(x):
+				out += x.getPrice(wage, list_fixed, list_entry, list_mod, round_it) * self.multi * self.amount
+
 		if round_it:
-			out = 0
-			for x in list:
-				if self.has_entry(x):
-					out += x.getPrice(wage) * self.multi * self.amount
 			return int(round(out))
 		else:
-			out = 0.0
-			for x in list:
-				if self.has_entry(x):
-					out += x.getPrice(wage) * self.multi * self.amount
 			return round(out, 2)
 
 
 class Single_Fixed_Class(object):
-	def __init__(self, title='Baseprice', comment='', time=0, price=0.0, amount=1.0):
+	def __init__(self, title='Baseprice', comment='', time=0, price=0.0, amount=1.0, order=0):
 		self.title = title
 		self.comment = comment
 		self.time = time
 		self.price = price
 		self.amount = amount
+		self.id = str(uuid.uuid1())
+		self.order = order
 
-	def getPrice(self):
+	def getTime(self):
+		return self.time
+
+	def getPrice(self, *arg):
 		return self.amount * self.price
 
 	def is_time(self):

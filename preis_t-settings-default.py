@@ -24,8 +24,9 @@ old_filetype_save			= False
 old_filetype_load			= False
 
 
-# coor stuff
+# visual stuff
 
+small_table = False
 colorize = True
 
 WHITE = '\033[97m'
