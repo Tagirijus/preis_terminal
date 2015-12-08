@@ -5,7 +5,7 @@ path_to_project = os.path.dirname(os.path.realpath(__file__))
 
 # some default values
 
-def_project_company			= ''
+def_project_company			= 'Company'
 def_project_client_title 	= 'Herr'
 def_project_client_name 	= 'Max Mustermann'
 def_project_client_address 	= 'Straße 5b'

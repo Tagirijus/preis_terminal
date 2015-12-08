@@ -620,6 +620,103 @@ def preset_choser(what, preset, title='', comment=''):
 			preset_choser(what, preset[c[chose]], next_title_pre + c[chose], tmp_comment)
 
 
+def preset_choser_clients(obj, preset):
+	print
+	if preset.has_key('company'):
+		obj.project_company = preset['company']
+		obj.project_client_title = preset['client_title']
+		obj.project_client_name = preset['client_name']
+		obj.project_client_address = preset['client_address']
+		obj.project_client_city = preset['client_city']
+		# obj.project_name = preset['project_name']
+		# obj.project_offer_filename = preset['offer_filename']
+		obj.project_round = str2bool(preset['round'])
+		obj.project_commodity = preset['commodity']
+
+		user = raw_input(CL_TXT + 'Project name [' + CL_DEF + obj.project_name + CL_TXT + ']: ' + CL_E)
+		if user:
+			obj.project_name = user
+			loaded_project = user
+
+		obj.project_offer_filename = obj.project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', obj.project_name.replace(' ', '_'))
+		def_choice = False
+		user = raw_input(CL_TXT + 'Offer output file (g=generate) [' + CL_DEF + obj.project_offer_filename + CL_TXT + ']: ' + CL_E)
+		if user == 'g':
+			def_generated_filename = def_project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', obj.project_name.replace(' ', '_'))
+			user2 = raw_input(CL_TXT + 'Offer output file [' + CL_DEF + def_generated_filename + CL_TXT + ']: ' + CL_E)
+			if user2 and check_file_exists(user2):
+				obj.project_offer_filename = user2
+			else:
+				obj.project_offer_filename = def_generated_filename
+		else:
+			if user and check_file_exists(user):
+				obj.project_offer_filename = user
+
+	elif len(preset) < 1:
+		print CL_INF + 'No client presets available.' + CL_E
+		return
+	else:
+		i = 0
+		c = []
+		t = []
+		for x in sorted(preset):
+			print CL_TXT + '(' + str(i) + ') ' + x + CL_E
+			c.append(x)
+			i += 1
+		chose = raw_input(CL_TXT + 'Preset: ' + CL_E)
+		try:
+			chose = int(chose)
+		except Exception, e:
+			chose = 0
+		if chose >= i:
+			chose = i-1
+
+		preset_choser_clients(obj, preset[c[chose]])
+
+
+def save_client_preset(obj, preset):
+	write_it = False
+	if preset.has_key(obj.project_company):
+		user = raw_input(CL_INF + 'Overwrite? [' + CL_DEF + 'no' + CL_INF + '] : ' + CL_E)
+		if user.lower() == 'yes' or user.lower() == 'y':
+			write_it = True
+	else:
+		write_it = True
+
+	if write_it:
+		if not preset.has_key(obj.project_company):
+			preset[obj.project_company] = {}
+		preset[obj.project_company]['company'] = obj.project_company
+		preset[obj.project_company]['client_title'] = obj.project_client_title
+		preset[obj.project_company]['client_name'] = obj.project_client_name
+		preset[obj.project_company]['client_address'] = obj.project_client_address
+		preset[obj.project_company]['client_city'] = obj.project_client_city
+		# preset[obj.project_company]['project_name'] = obj.project_name
+		# preset[obj.project_company]['offer_filename'] = obj.project_offer_filename
+		preset[obj.project_company]['round'] = str(obj.project_round)
+		preset[obj.project_company]['commodity'] = obj.project_commodity
+
+	cur_dir = os.path.dirname(os.path.realpath(__file__))
+	with open (cur_dir + '/clients.preis_presets', 'w') as myfile:
+		out = ''
+		for y, x in preset.iteritems():
+			print 'DEBUG:', x
+			out += x['company'] + '>' + 'company>' + x['company'] + '\n'
+			out += x['company'] + '>' + 'client_title>' + x['client_title'] + '\n'
+			out += x['company'] + '>' + 'client_name>' + x['client_name'] + '\n'
+			out += x['company'] + '>' + 'client_address>' + x['client_address'] + '\n'
+			out += x['company'] + '>' + 'client_city>' + x['client_city'] + '\n'
+			# out += x['company'] + '>' + 'project_name>' + x['project_name'] + '\n'
+			# out += x['company'] + '>' + 'offer_filename>' + x['offer_filename'] + '\n'
+			out += x['company'] + '>' + 'round>' + x['round'] + '\n'
+			out += x['company'] + '>' + 'commodity>' + x['commodity'] + '\n'
+		myfile.write(out)
+		myfile.close()
+
+	print
+
+
+
 # presets
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))
@@ -634,6 +731,17 @@ if os.path.isfile(cur_dir + '/presets.preis_presets'):
 		myfile.close()
 
 		presets = array_of_paths_to_dict(pre_presets)
+
+presets_clients = {}
+if os.path.isfile(cur_dir + '/clients.preis_presets'):
+	with open (cur_dir + '/clients.preis_presets', 'r') as myfile:
+		presets_file = myfile.read().splitlines()
+		pre_presets = []
+		for x in presets_file:
+			pre_presets.append( x.split('>') )
+		myfile.close()
+
+		presets_clients = array_of_paths_to_dict(pre_presets)
 
 
 
@@ -1115,62 +1223,71 @@ class Entries_Class(object):
 
 		print CL_TXT + 'Enter clients information:' + CL_E
 
-		user = raw_input(CL_TXT + 'Company name [' + CL_DEF + self.project_company + CL_TXT + ']: ' + CL_E)
-		if user:
-			if user == '-':
-				self.project_company = ''
-			else:
+		preset_chosing = False
+		user = raw_input(CL_TXT + 'Chose from preset? [' + CL_DEF + 'no' + CL_TXT + '] : ' + CL_E)
+		if user.lower() == 'yes' or user.lower() == 'y':
+			preset_chosing = True
+
+		if preset_chosing:
+			preset_choser_clients(self, presets_clients)
+			print
+		else:
+			user = raw_input(CL_TXT + 'Company name [' + CL_DEF + self.project_company + CL_TXT + ']: ' + CL_E)
+			if user:
 				self.project_company = user
 
-		user = raw_input(CL_TXT + 'Client title [' + CL_DEF + self.project_client_title + CL_TXT + ']: ' + CL_E)
-		if user:
-			self.project_client_title = user
+			user = raw_input(CL_TXT + 'Client title [' + CL_DEF + self.project_client_title + CL_TXT + ']: ' + CL_E)
+			if user:
+				self.project_client_title = user
 
-		user = raw_input(CL_TXT + 'Client name [' + CL_DEF + self.project_client_name + CL_TXT + ']: ' + CL_E)
-		if user:
-			self.project_client_name = user
+			user = raw_input(CL_TXT + 'Client name [' + CL_DEF + self.project_client_name + CL_TXT + ']: ' + CL_E)
+			if user:
+				self.project_client_name = user
 
-		user = raw_input(CL_TXT + 'Client address [' + CL_DEF + self.project_client_address + CL_TXT + ']: ' + CL_E)
-		if user:
-			self.project_client_address = user
+			user = raw_input(CL_TXT + 'Client address [' + CL_DEF + self.project_client_address + CL_TXT + ']: ' + CL_E)
+			if user:
+				self.project_client_address = user
 
-		user = raw_input(CL_TXT + 'Client city [' + CL_DEF + self.project_client_city + CL_TXT + ']: ' + CL_E)
-		if user:
-			self.project_client_city = user
+			user = raw_input(CL_TXT + 'Client city [' + CL_DEF + self.project_client_city + CL_TXT + ']: ' + CL_E)
+			if user:
+				self.project_client_city = user
 
-		user = raw_input(CL_TXT + 'Project name [' + CL_DEF + self.project_name + CL_TXT + ']: ' + CL_E)
-		if user:
-			self.project_name = user
-			loaded_project = user
+			user = raw_input(CL_TXT + 'Project name [' + CL_DEF + self.project_name + CL_TXT + ']: ' + CL_E)
+			if user:
+				self.project_name = user
+				loaded_project = user
 
-
-		self.project_offer_filename = self.project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', self.project_name.replace(' ', '_'))
-		def_choice = False
-		user = raw_input(CL_TXT + 'Offer output file (g=generate) [' + CL_DEF + self.project_offer_filename + CL_TXT + ']: ' + CL_E)
-		if user == 'g':
-			def_generated_filename = def_project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', self.project_name.replace(' ', '_'))
-			user2 = raw_input(CL_TXT + 'Offer output file [' + CL_DEF + def_generated_filename + CL_TXT + ']: ' + CL_E)
-			if user2 and check_file_exists(user2):
-				self.project_offer_filename = user2
+			self.project_offer_filename = self.project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', self.project_name.replace(' ', '_'))
+			def_choice = False
+			user = raw_input(CL_TXT + 'Offer output file (g=generate) [' + CL_DEF + self.project_offer_filename + CL_TXT + ']: ' + CL_E)
+			if user == 'g':
+				def_generated_filename = def_project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', self.project_name.replace(' ', '_'))
+				user2 = raw_input(CL_TXT + 'Offer output file [' + CL_DEF + def_generated_filename + CL_TXT + ']: ' + CL_E)
+				if user2 and check_file_exists(user2):
+					self.project_offer_filename = user2
+				else:
+					self.project_offer_filename = def_generated_filename
 			else:
-				self.project_offer_filename = def_generated_filename
-		else:
-			if user and check_file_exists(user):
-				self.project_offer_filename = user
+				if user and check_file_exists(user):
+					self.project_offer_filename = user
 
-		tmp_round = 'yes' if self.project_round else 'no'
-		user = raw_input(CL_TXT + 'Round exported output? [' + CL_DEF + tmp_round + CL_TXT + ']: ' + CL_E)
-		if user:
-			if user == 'y' or user == 'yes':
-				self.project_round = True
-			else:
-				self.project_round = False
+			tmp_round = 'yes' if self.project_round else 'no'
+			user = raw_input(CL_TXT + 'Round exported output? [' + CL_DEF + tmp_round + CL_TXT + ']: ' + CL_E)
+			if user:
+				if user == 'y' or user == 'yes':
+					self.project_round = True
+				else:
+					self.project_round = False
 
-		user = raw_input(CL_TXT + 'Commodity [' + CL_DEF + self.project_commodity + CL_TXT + ']:' + CL_E)
-		if user:
-			self.project_commodity = user
+			user = raw_input(CL_TXT + 'Commodity [' + CL_DEF + self.project_commodity + CL_TXT + ']:' + CL_E)
+			if user:
+				self.project_commodity = user
 
-		print
+			user = raw_input(CL_TXT + 'Save to client presets? [' + CL_DEF + 'no' + CL_TXT + '] : ' + CL_E)
+			if user.lower() == 'yes' or user.lower() == 'y':
+				save_client_preset(self, presets_clients)
+
+			print
 
 	def export_to_odt(self):
 		if secretary_available:
