@@ -1,39 +1,39 @@
-E>Büroaufwand>h>0.15
-E>Büroaufwand>c>Kommunikation, Fahrten, Bürokratie
-E>Music>Cuen>h>0.4
-E>Music>Cuen>c>
-E>Music>Band>h>2
-E>Music>Band>c>
-E>Music>Big Band>h>4
-E>Music>Big Band>c>
-E>Music>Dubstep>h>2.4
-E>Music>Dubstep>c>
-E>Music>Electro>h>0.9
-E>Music>Electro>c>
-E>Music>Piano>h>1.2
-E>Music>Piano>c>
-E>Music>Orchestra>h>3.5
-E>Music>Orchestra>c>
-E>Music>Notate 1 voice>h>0.2
-E>Music>Notate 1 voice>c>
-E>Music>Rec 1 voice>h>0.55
-E>Music>Rec 1 voice>c>
-E>Sound>Min>h>2.5
-E>Sound>Min>c>
-E>Sound>Single>h>0.1
-E>Sound>Single>c>
-E>Sound>Timing>h>0.1
-E>Sound>Timing>c>
-E>Mix>Film / 3 tracks>h>0.25
-E>Mix>Film / 3 tracks>c>
-E>Mix>Audiobook>h>0.03
-E>Mix>Audiobook>c>
-M>Correct>Music>h>0.35
-M>Correct>Music>t>1
-M>Correct>Music>c>
-M>Correct>Sound>h>0.1
-M>Correct>Sound>t>1
-M>Correct>Sound>c>
-M>Exclusive>h>3
-M>Exclusive>t>
-M>Exclusive>c>
+Entry>Default>Büroaufwand>time>0.15
+Entry>Default>Büroaufwand>comment>Kommunikation, Fahrten, Bürokratie
+Entry>Default>Music>Cuen>time>0.4
+Entry>Default>Music>Cuen>comment>
+Entry>Default>Music>Band>time>2
+Entry>Default>Music>Band>comment>
+Entry>Default>Music>Big Band>time>4
+Entry>Default>Music>Big Band>comment>
+Entry>Default>Music>Dubstep>time>2.4
+Entry>Default>Music>Dubstep>comment>
+Entry>Default>Music>Electro>time>0.9
+Entry>Default>Music>Electro>comment>
+Entry>Default>Music>Piano>time>1.2
+Entry>Default>Music>Piano>comment>
+Entry>Default>Music>Orchestra>time>3.5
+Entry>Default>Music>Orchestra>comment>
+Entry>Default>Music>Notate 1 voice>time>0.2
+Entry>Default>Music>Notate 1 voice>comment>
+Entry>Default>Music>Rec 1 voice>time>0.55
+Entry>Default>Music>Rec 1 voice>comment>
+Entry>Default>Sound>Min>time>2.5
+Entry>Default>Sound>Min>comment>
+Entry>Default>Sound>Single>time>0.1
+Entry>Default>Sound>Single>comment>
+Entry>Default>Sound>Timing>time>0.1
+Entry>Default>Sound>Timing>comment>
+Entry>Default>Mix>Film / 3 tracks>time>0.25
+Entry>Default>Mix>Film / 3 tracks>comment>
+Entry>Default>Mix>Audiobook>time>0.03
+Entry>Default>Mix>Audiobook>comment>
+Mod>Default>Correct>Music>time>0.35
+Mod>Default>Correct>Music>is_time>1
+Mod>Default>Correct>Music>comment>
+Mod>Default>Correct>Sound>time>0.1
+Mod>Default>Correct>Sound>is_time>1
+Mod>Default>Correct>Sound>comment>
+Mod>Default>Exclusive>time>3
+Mod>Default>Exclusive>is_time>
+Mod>Default>Exclusive>comment>

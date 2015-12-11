@@ -16,7 +16,7 @@ except Exception, e:
 ### ### ### load configurarion file for variables
 ### ### ###
 
-# !!!!! SET YOU INDIVIDUAL SETTINGS FILE HERE
+# !!!!! SET YOUR INDIVIDUAL SETTINGS FILE HERE
 # !!!!! IT MUST BE SET UP LIKE THE 'preis_t-settings-default.py' FILE
 ####
 ###
@@ -526,15 +526,6 @@ def array_of_paths_to_dict(array):
 	return out
 
 
-def updateDict(the_dict, the_array):
-	if type(the_array) is list:
-		if len(the_array) > 2:
-			the_dict[the_array[0]] = {}
-			updateDict(the_dict, the_array[1:])
-		elif len(the_array) == 2:
-			the_dict[the_array[0]] = the_array[1]
-
-
 def cls():
 	print
 	print CL_INF + '#' * 50 + CL_E
@@ -543,7 +534,7 @@ def cls():
 
 def preset_choser(what, preset, title='', comment=''):
 	print
-	if preset.has_key('h'):
+	if preset.has_key('time'):
 		if what == 'fix':
 			title_tmp = raw_input(CL_TXT + 'Title [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
 			if title_tmp:
@@ -556,7 +547,7 @@ def preset_choser(what, preset, title='', comment=''):
 				amount = float(amount.replace(',', '.')) or 1.0
 			except Exception, e:
 				amount = 1.0
-			Entries.add(what='fix', title=title, h=float(preset['h']), price=float(preset['p']), amount=amount, comment=comment, order=Entries.count())
+			Entries.add(what='fix', title=title, h=float(preset['time']), price=float(preset['price']), amount=amount, comment=comment, order=Entries.count())
 		elif what == 'entry':
 			title_tmp = raw_input(CL_TXT + 'Title [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
 			if title_tmp:
@@ -569,7 +560,7 @@ def preset_choser(what, preset, title='', comment=''):
 				amount = float(amount.replace(',', '.')) or 1.0
 			except Exception, e:
 				amount = 1.0
-			Entries.add(what='entry', title=title, h=float(preset['h']), amount=amount, comment=comment, order=Entries.count())
+			Entries.add(what='entry', title=title, h=float(preset['time']), amount=amount, comment=comment, order=Entries.count())
 		elif what == 'mod':
 			title_tmp = raw_input(CL_TXT + 'Title [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
 			if title_tmp:
@@ -591,7 +582,7 @@ def preset_choser(what, preset, title='', comment=''):
 				entries = Entries.index_to_entries(entries)
 			else:
 				entries = []
-			Entries.add(what='mod', title=title, multi=float(preset['h']), time=bool(preset['t']), entries=entries, comment=comment, amount=amount, order=Entries.count())
+			Entries.add(what='mod', title=title, multi=float(preset['time']), time=bool(preset['is_time']), entries=entries, comment=comment, amount=amount, order=Entries.count())
 	else:
 		i = 0
 		c = []
@@ -609,12 +600,13 @@ def preset_choser(what, preset, title='', comment=''):
 			chose = 0
 		if chose > i:
 			chose = i
-		next_title_pre = '' if title == '' else title + ' > '
+		# next_title_pre = '' if title == '' else title + ' > '
+		next_title_pre = ''
 		if chose == 0 or not chose:
 			Entries.add_edit(what)
 		else:
-			if preset[c[chose]].has_key('c'):
-				tmp_comment = preset[c[chose]]['c']
+			if preset[c[chose]].has_key('comment'):
+				tmp_comment = preset[c[chose]]['comment']
 			else:
 				tmp_comment = ''
 			preset_choser(what, preset[c[chose]], next_title_pre + c[chose], tmp_comment)
@@ -719,11 +711,9 @@ def save_client_preset(obj, preset):
 
 # presets
 
-cur_dir = os.path.dirname(os.path.realpath(__file__))
-
 presets = {}
-if os.path.isfile(cur_dir + '/presets.preis_presets'):
-	with open (cur_dir + '/presets.preis_presets', 'r') as myfile:
+if os.path.isfile(path_to_project + '/presets.preis_presets'):
+	with open (path_to_project + '/presets.preis_presets', 'r') as myfile:
 		presets_file = myfile.read().splitlines()
 		pre_presets = []
 		for x in presets_file:
@@ -733,8 +723,8 @@ if os.path.isfile(cur_dir + '/presets.preis_presets'):
 		presets = array_of_paths_to_dict(pre_presets)
 
 presets_clients = {}
-if os.path.isfile(cur_dir + '/clients.preis_presets'):
-	with open (cur_dir + '/clients.preis_presets', 'r') as myfile:
+if os.path.isfile(path_to_project + '/clients.preis_presets'):
+	with open (path_to_project + '/clients.preis_presets', 'r') as myfile:
 		presets_file = myfile.read().splitlines()
 		pre_presets = []
 		for x in presets_file:
@@ -1466,7 +1456,7 @@ while user != 'exit' and user != 'e' and user != '.':
 	user = user.lower()
 
 	# show the help
-	if user == 'help' or user == 'h':
+	if user == 'help' or user == 'h' or user == '?':
 		print
 		head = [CL_TXT + 'command' + CL_E, CL_TXT + 'result' + CL_E]
 		content = [
@@ -1480,7 +1470,7 @@ while user != 'exit' and user != 'e' and user != '.':
 			[CL_TXT + 'save / s' + CL_E, CL_TXT + 'saves the project' + CL_E],
 			[CL_TXT + 'load / l' + CL_E, CL_TXT + 'loads the project' + CL_E],
 			[CL_TXT + 'export / exp' + CL_E, CL_TXT + 'exports the project' + CL_E],
-			[CL_TXT + 'help / h' + CL_E, CL_TXT + 'this help text' + CL_E],
+			[CL_TXT + 'help / h / ?' + CL_E, CL_TXT + 'this help text' + CL_E],
 			[CL_TXT + 'exit / e / .' + CL_E, CL_TXT + 'end the program' + CL_E]
 			]
 		print tabulate(content, head)
@@ -1489,24 +1479,24 @@ while user != 'exit' and user != 'e' and user != '.':
 	# new  entry
 	elif user == 'fix' or user == 'f':
 		print
-		if presets.has_key('F'):
-			preset_choser('fix', presets['F'])
+		if presets.has_key('Fixed'):
+			preset_choser('fix', presets['Fixed'])
 		else:
 			Entries.add_edit('fix')
 
 	# new  entry
 	elif user == 'entry' or user == 'a':
 		print
-		if presets.has_key('E'):
-			preset_choser('entry', presets['E'])
+		if presets.has_key('Entry'):
+			preset_choser('entry', presets['Entry'])
 		else:
 			Entries.add_edit('entry')
 
 	# new modulator
 	elif user == 'mod' or user == 'm':
 		print
-		if presets.has_key('M'):
-			preset_choser('mod', presets['M'])
+		if presets.has_key('Mod'):
+			preset_choser('mod', presets['Mod'])
 		else:
 			Entries.add_edit('mod')
 
