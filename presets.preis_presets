@@ -37,3 +37,5 @@ Mod>Default>Correct>Sound>comment>
 Mod>Default>Exclusive>time>3
 Mod>Default>Exclusive>is_time>
 Mod>Default>Exclusive>comment>
+Entry>testcompany>Mix>time>0.25
+Entry>testcompany>Mix>comment>
