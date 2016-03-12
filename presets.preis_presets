@@ -1,41 +1,76 @@
-Entry>Default>Büroaufwand>time>0.15
-Entry>Default>Büroaufwand>comment>Kommunikation, Fahrten, Bürokratie
-Entry>Default>Music>Cuen>time>0.4
-Entry>Default>Music>Cuen>comment>
-Entry>Default>Music>Band>time>2
-Entry>Default>Music>Band>comment>
-Entry>Default>Music>Big Band>time>4
-Entry>Default>Music>Big Band>comment>
-Entry>Default>Music>Dubstep>time>2.4
-Entry>Default>Music>Dubstep>comment>
-Entry>Default>Music>Electro>time>0.9
-Entry>Default>Music>Electro>comment>
-Entry>Default>Music>Piano>time>1.2
-Entry>Default>Music>Piano>comment>
-Entry>Default>Music>Orchestra>time>3.5
-Entry>Default>Music>Orchestra>comment>
-Entry>Default>Music>Notate 1 voice>time>0.2
-Entry>Default>Music>Notate 1 voice>comment>
-Entry>Default>Music>Rec 1 voice>time>0.55
-Entry>Default>Music>Rec 1 voice>comment>
-Entry>Default>Sound>Min>time>2.5
-Entry>Default>Sound>Min>comment>
-Entry>Default>Sound>Single>time>0.1
-Entry>Default>Sound>Single>comment>
-Entry>Default>Sound>Timing>time>0.1
-Entry>Default>Sound>Timing>comment>
-Entry>Default>Mix>Film / 3 tracks>time>0.25
-Entry>Default>Mix>Film / 3 tracks>comment>
-Entry>Default>Mix>Audiobook>time>0.03
-Entry>Default>Mix>Audiobook>comment>
-Mod>Default>Correct>Music>time>0.35
-Mod>Default>Correct>Music>is_time>1
-Mod>Default>Correct>Music>comment>
-Mod>Default>Correct>Sound>time>0.1
-Mod>Default>Correct>Sound>is_time>1
-Mod>Default>Correct>Sound>comment>
-Mod>Default>Exclusive>time>3
-Mod>Default>Exclusive>is_time>
-Mod>Default>Exclusive>comment>
-Entry>testcompany>Mix>time>0.25
-Entry>testcompany>Mix>comment>
+Fixed>0Default>Konzeption (pauschal)>time>0.5
+Fixed>0Default>Konzeption (pauschal)>price>20
+Fixed>0Default>Konzeption (pauschal)>comment>Konzeption, Meetings, Kommunikation, Bürokratie
+Entry>0Default>Konzeption (pauschal)>time>0.5
+Entry>0Default>Konzeption (pauschal)>comment>Konzeption, Meetings, Kommunikation, Bürokratie
+Entry>0Default>Musik>Cuen>time>0.4
+Entry>0Default>Musik>Cuen>comment>
+Entry>0Default>Musik>Komponieren (einfach)>time>1.2
+Entry>0Default>Musik>Komponieren (einfach)>comment>Komponieren einfacher Musik
+Entry>0Default>Musik>Komponieren (normal)>time>2.4
+Entry>0Default>Musik>Komponieren (normal)>comment>Komponieren mittelschwerer Musik
+Entry>0Default>Musik>Komponieren (komplex)>time>4.8
+Entry>0Default>Musik>Komponieren (komplex)>comment>Komponieren sehr komplexer Musik
+Entry>0Default>Musik>Notation 1 Stimme>time>0.16
+Entry>0Default>Musik>Notation 1 Stimme>comment>
+Entry>0Default>Musik>Aufnahme 1 Stimme>time>0.55
+Entry>0Default>Musik>Aufnahme 1 Stimme>comment>
+Entry>0Default>Sound>Sounddesign (Minute)>time>2.5
+Entry>0Default>Sound>Sounddesign (Minute)>comment>Sounddesign pro Minute Film
+Entry>0Default>Sound>Sounddesign (Stück)>time>0.24
+Entry>0Default>Sound>Sounddesign (Stück)>comment>Sounddesign, 1 Stück bis zu 10 Sekunden Länge
+Entry>0Default>Sound>Sounddesign an Szene anpassen (Minute)>time>0.1
+Entry>0Default>Sound>Sounddesign an Szene anpassen (Minute)>comment>Timing des Sounddesigns an Minute Film anpassen
+Entry>0Default>Sound>O-Ton (Stunde)>time>1
+Entry>0Default>Sound>O-Ton (Stunde)>comment>O-Ton am Set aufnehmen
+Entry>0Default>Mix>Filmmix (Minute)>time>0.25
+Entry>0Default>Mix>Filmmix (Minute)>comment>Tonmischung pro Minute Film
+Entry>0Default>Mix>Hörbuchmix>time>0.03
+Entry>0Default>Mix>Hörbuchmix>comment>Tonmischung pro Minute Hörbuch
+Entry>0Default>Sprechen (Wort)>time>0.03
+Entry>0Default>Sprechen (Wort)>comment>Einsprechen eines Wortes
+Entry>0Default>Sprechen (Minute)>time>0.18
+Entry>0Default>Sprechen (Minute)>comment>Einsprechen einer Minute
+Entry>0Default>Ext. Sprecher aufnehmen (Minute)>time>0.53
+Entry>0Default>Ext. Sprecher aufnehmen>comment>Aufnehmen externen Sprechers pro Minute
+Mod>0Default>Konzeption>time>0.35
+Mod>0Default>Konzeption>is_time>1
+Mod>0Default>Konzeption>comment>Konzeption, Meetings, Kommunikation, Bürokratie
+Mod>0Default>Korrektur>Korrekturschleife (Musik)>time>0.35
+Mod>0Default>Korrektur>Korrekturschleife (Musik)>is_time>1
+Mod>0Default>Korrektur>Korrekturschleife (Musik)>comment>Eine Korrekturschleife für Musikproduktion
+Mod>0Default>Korrektur>Korrekturschleife (Sound)>time>0.1
+Mod>0Default>Korrektur>Korrekturschleife (Sound)>is_time>1
+Mod>0Default>Korrektur>Korrekturschleife (Sound)>comment>Eine Korrekturschleife für Sounddesign u/o Tonmix
+Mod>0Default>Nutzung>Exklusivrechte>time>4
+Mod>0Default>Nutzung>Exklusivrechte>is_time>
+Mod>0Default>Nutzung>Exklusivrechte>comment>Einräumung exklusiver Nutzungsrechte, in Art, Zeit und Raum ungebunden
+Mod>0Default>Nutzung>Nutzungslizenz Typ 1>time>0.08
+Mod>0Default>Nutzung>Nutzungslizenz Typ 1>is_time>
+Mod>0Default>Nutzung>Nutzungslizenz Typ 1>comment>Nutzung auf Event oder Präsentation
+Mod>0Default>Nutzung>Nutzungslizenz Typ 2>time>0.17
+Mod>0Default>Nutzung>Nutzungslizenz Typ 2>is_time>
+Mod>0Default>Nutzung>Nutzungslizenz Typ 2>comment>Nutzung als Hintergrundmusik auf Website, Imagefilm, redaktioneller Film (TV / Web) oder Telefonwarteschleife
+Mod>0Default>Nutzung>Nutzungslizenz Typ 3>time>0.34
+Mod>0Default>Nutzung>Nutzungslizenz Typ 3>is_time>
+Mod>0Default>Nutzung>Nutzungslizenz Typ 3>comment>Nutzung in 1 Werbefilm (Web) oder Radio / Kino (regional)
+Mod>0Default>Nutzung>Nutzungslizenz Typ 4>time>0.48
+Mod>0Default>Nutzung>Nutzungslizenz Typ 4>is_time>
+Mod>0Default>Nutzung>Nutzungslizenz Typ 4>comment>Nutzung im Radio / Kino (national), TV Werbespot (regional), Public Viewing Werbespot oder in App / PC-Spiel
+Mod>0Default>Nutzung>Nutzungslizenz Typ 5>time>2.11
+Mod>0Default>Nutzung>Nutzungslizenz Typ 5>is_time>
+Mod>0Default>Nutzung>Nutzungslizenz Typ 5>comment>Nutzung im TV-Werbespot (national) oder In-Stream Werbe Ad
+Entry>Tagirijus>Gehörig Unlustig>Büro>time>0.17
+Entry>Tagirijus>Gehörig Unlustig>Büro>comment>Hochladen und veröffentlichen bzgl. 1 Minute GU
+Entry>Tagirijus>Gehörig Unlustig>Script>time>0.3
+Entry>Tagirijus>Gehörig Unlustig>Script>comment>Entwickeln einer Idee bzgl. 1 Minute GU
+Entry>Tagirijus>Gehörig Unlustig>Sound>time>0.2
+Entry>Tagirijus>Gehörig Unlustig>Sound>comment>Aufnehmen von Sounds bzgl. 1 Minute GU
+Entry>Tagirijus>Gehörig Unlustig>Sprechen>time>0.18
+Entry>Tagirijus>Gehörig Unlustig>Sprechen>comment>Einsprechen von Stimmen bzgl. 1 Minute GU
+Entry>Tagirijus>Gehörig Unlustig>Musik>time>0.72
+Entry>Tagirijus>Gehörig Unlustig>Musik>comment>Produzieren von Musik bzgl. 1 Minute GU
+Entry>Tagirijus>Gehörig Unlustig>Mix>time>0.92
+Entry>Tagirijus>Gehörig Unlustig>Mix>comment>Mixen bzgl. 1 Minute GU
+Entry>Tagirijus>Gehörig Unlustig>Folge produzieren>time>2.11
+Entry>Tagirijus>Gehörig Unlustig>Folge produzieren>comment>Produzieren von 1 Minute GU

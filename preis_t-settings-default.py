@@ -12,6 +12,7 @@ def_project_client_address 	= 'Straße 5b'
 def_project_client_city 	= '47209 Stadt'
 
 def_project_name		 	= 'Projekt X'
+def_project_about		 	= 'Auflistung der Arbeitsabschnitte im Bereich Musik- und Tonproduktion für genanntes Projekt:'
 def_project_offer_filename 	= 'Angebot_{YEAR}_-_{PROJECT_NAME}.odt'
 offer_template_filename		= path_to_project + '/template.odt'
 def_project_save_name		= '{COMPANY}_{DATE}_{PROJECT_NAME}'
@@ -19,6 +20,10 @@ def_project_save_name		= '{COMPANY}_{DATE}_{PROJECT_NAME}'
 date_format					= '%d.%m.%Y'
 decimal						= ','
 def_commodity				= '€'
+def_hoursday				= 6
+							# monday=0, ... , sunday=6
+def_workdays				= [0,1,2,3,4]
+def_minimumdays				= 2
 
 old_filetype_save			= False
 old_filetype_load			= False

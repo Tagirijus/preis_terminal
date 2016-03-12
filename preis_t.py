@@ -54,6 +54,7 @@ def_project_client_name 	= configuration.def_project_client_name
 def_project_client_address 	= configuration.def_project_client_address
 def_project_client_city 	= configuration.def_project_client_city
 
+def_project_about		 	= configuration.def_project_about
 def_project_name		 	= configuration.def_project_name
 def_project_offer_filename 	= configuration.def_project_offer_filename
 offer_template_filename	 	= configuration.offer_template_filename
@@ -62,6 +63,9 @@ def_project_save_name		= configuration.def_project_save_name
 date_format		 			= configuration.date_format
 decimal			 			= configuration.decimal
 def_commodity	 			= configuration.def_commodity
+def_hoursday				= configuration.def_hoursday
+workdays					= configuration.def_workdays
+minimumdays					= configuration.def_minimumdays
 
 old_filetype_save			= configuration.old_filetype_save
 old_filetype_load			= configuration.old_filetype_load
@@ -89,6 +93,16 @@ CL_E = configuration.CL_E
 
 
 # functions
+
+def add_days(start, days):
+	tmp = days
+	end = start
+	while tmp != 0:
+		end = end + datetime.timedelta(days=1)
+		while end.weekday() not in workdays:
+			end = end + datetime.timedelta(days=1)
+		tmp -= 1
+	return end
 
 def str2bool(str):
 	return str.lower() in ('true', '1')
@@ -167,6 +181,8 @@ def Loader():
 						Entries.project_company = Loader[11]
 					if len(Loader) > 12:
 						Entries.fixed = Loader[12]
+					if len(Loader) > 13:
+						Entries.project_about = Loader[13]
 					loaded_project = project_names[int(user)]
 		else:
 			print CL_INF + 'No projects exists.' + CL_E
@@ -259,6 +275,13 @@ def Loader_New():
 					if len(loaded_project) > 9:
 						try:
 							Entries.Wage = float(loaded_project[9])
+						except Exception, e:
+							pass
+					if len(loaded_project) > 10:
+						Entries.project_about = loaded_project[10]
+					if len(loaded_project) > 11:
+						try:
+							Entries.project_hoursday = int(loaded_project[11])
 						except Exception, e:
 							pass
 
@@ -371,9 +394,9 @@ def Saver_New(obj):
 	user = raw_input( CL_TXT + 'Project name or \'.\' to cancel (g=generate) [' + CL_DEF + loaded_project + CL_TXT + ']: ' + CL_E)
 	if user == 'g':
 		gen_company_name = (obj.project_company + ' ') if obj.project_company else ''
-		gen_date = datetime.datetime.now().strftime('%Y-%m-%d ')
+		# gen_date = datetime.datetime.now().strftime('%Y-%m-%d ')
 		gen_project_name = obj.project_name
-		gen_filename = gen_company_name + gen_date + gen_project_name
+		gen_filename = gen_company_name + gen_project_name
 		user = raw_input( CL_TXT + 'Project name \'.\' to cancel [' + CL_DEF + gen_filename + CL_TXT + ']: ' + CL_E)
 		if not user:
 			user = gen_filename
@@ -396,7 +419,7 @@ def Saver_New(obj):
 			save_output = ''
 
 			# save project settings
-			# company, client title, name, address, city, project name, offer filename, round, commodity, wage
+			# company, client title, name, address, city, project name, offer filename, round, commodity, wage, about, hoursday
 			save_output += '[PROJECT]\n'
 			save_output += obj.project_company + '\n'
 			save_output += obj.project_client_title + '\n'
@@ -408,6 +431,8 @@ def Saver_New(obj):
 			save_output += str(obj.project_round) + '\n'
 			save_output += obj.project_commodity + '\n'
 			save_output += str(obj.Wage) + '\n'
+			save_output += obj.project_about + '\n'
+			save_output += str(obj.project_hoursday) + '\n'
 
 			# save list
 			save_output += '[ENTRIES]\n'
@@ -499,6 +524,7 @@ def Saver(obj):
 			Saver.append( obj.project_commodity )
 			Saver.append( obj.project_company )
 			Saver.append( obj.fixed )
+			Saver.append( obj.project_about )
 			SaveObject(Saver, file_name)
 			loaded_project = loaded_project_tmp
 
@@ -616,19 +642,30 @@ def preset_choser_clients(obj, preset):
 	print
 	if preset.has_key('company'):
 		obj.project_company = preset['company']
-		obj.project_client_title = preset['client_title']
-		obj.project_client_name = preset['client_name']
-		obj.project_client_address = preset['client_address']
-		obj.project_client_city = preset['client_city']
-		# obj.project_name = preset['project_name']
-		# obj.project_offer_filename = preset['offer_filename']
-		obj.project_round = str2bool(preset['round'])
-		obj.project_commodity = preset['commodity']
+		if preset.has_key('client_title'):
+			obj.project_client_title = preset['client_title']
+		print 'DEBUG:', obj.project_client_title
+		if preset.has_key('client_name'):
+			obj.project_client_name = preset['client_name']
+		if preset.has_key('client_address'):
+			obj.project_client_address = preset['client_address']
+		if preset.has_key('client_city'):
+			obj.project_client_city = preset['client_city']
+		if preset.has_key('round'):
+			obj.project_round = str2bool(preset['round'])
+		if preset.has_key('commodity'):
+			obj.project_commodity = preset['commodity']
+		if preset.has_key('hoursday'):
+			obj.project_hoursday = int(preset['hoursday'])
 
 		user = raw_input(CL_TXT + 'Project name [' + CL_DEF + obj.project_name + CL_TXT + ']: ' + CL_E)
 		if user:
 			obj.project_name = user
 			loaded_project = user
+
+		user = raw_input(CL_TXT + 'Project about [' + CL_DEF + obj.project_about + CL_TXT + ']: ' + CL_E)
+		if user:
+			obj.project_about = user
 
 		obj.project_offer_filename = obj.project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', obj.project_name.replace(' ', '_'))
 		def_choice = False
@@ -683,25 +720,31 @@ def save_client_preset(obj, preset):
 		preset[obj.project_company]['client_name'] = obj.project_client_name
 		preset[obj.project_company]['client_address'] = obj.project_client_address
 		preset[obj.project_company]['client_city'] = obj.project_client_city
-		# preset[obj.project_company]['project_name'] = obj.project_name
-		# preset[obj.project_company]['offer_filename'] = obj.project_offer_filename
 		preset[obj.project_company]['round'] = str(obj.project_round)
 		preset[obj.project_company]['commodity'] = obj.project_commodity
+		preset[obj.project_company]['hoursday'] = str(obj.project_hoursday)
 
 	cur_dir = os.path.dirname(os.path.realpath(__file__))
 	with open (cur_dir + '/clients.preis_presets', 'w') as myfile:
 		out = ''
 		for y, x in preset.iteritems():
 			print 'DEBUG:', x
-			out += x['company'] + '>' + 'company>' + x['company'] + '\n'
-			out += x['company'] + '>' + 'client_title>' + x['client_title'] + '\n'
-			out += x['company'] + '>' + 'client_name>' + x['client_name'] + '\n'
-			out += x['company'] + '>' + 'client_address>' + x['client_address'] + '\n'
-			out += x['company'] + '>' + 'client_city>' + x['client_city'] + '\n'
-			# out += x['company'] + '>' + 'project_name>' + x['project_name'] + '\n'
-			# out += x['company'] + '>' + 'offer_filename>' + x['offer_filename'] + '\n'
-			out += x['company'] + '>' + 'round>' + x['round'] + '\n'
-			out += x['company'] + '>' + 'commodity>' + x['commodity'] + '\n'
+			if x.has_key('company'):
+				out += x['company'] + '>' + 'company>' + x['company'] + '\n'
+			if x.has_key('client_title'):
+				out += x['company'] + '>' + 'client_title>' + x['client_title'] + '\n'
+			if x.has_key('client_name'):
+				out += x['company'] + '>' + 'client_name>' + x['client_name'] + '\n'
+			if x.has_key('client_address'):
+				out += x['company'] + '>' + 'client_address>' + x['client_address'] + '\n'
+			if x.has_key('client_city'):
+				out += x['company'] + '>' + 'client_city>' + x['client_city'] + '\n'
+			if x.has_key('round'):
+				out += x['company'] + '>' + 'round>' + x['round'] + '\n'
+			if x.has_key('commodity'):
+				out += x['company'] + '>' + 'commodity>' + x['commodity'] + '\n'
+			if x.has_key('hoursday'):
+				out += x['company'] + '>' + 'hoursday>' + x['hoursday'] + '\n'
 		myfile.write(out)
 		myfile.close()
 
@@ -745,9 +788,11 @@ class Entries_Class(object):
 		self.project_client_address = def_project_client_address
 		self.project_client_city = def_project_client_city
 		self.project_name = def_project_name
+		self.project_about = def_project_about
 		self.project_offer_filename = def_project_offer_filename
 		self.project_round = True
 		self.project_commodity = def_commodity
+		self.project_hoursday = def_hoursday
 		self.Wage = 40
 		self.Wage_Pro = 40
 		self.Wage_Edu = 33
@@ -1006,9 +1051,9 @@ class Entries_Class(object):
 			h_unit = 0.4
 		units = raw_input(CL_TXT + '-- units [' + CL_DEF + '1' + CL_TXT + ']: ' + CL_E)
 		try:
-			unit = float(unit.replace(',', '.'))
+			units = float(unit.replace(',', '.'))
 		except Exception, e:
-			unit = 1.0
+			units = 1.0
 		out = h_unit * units
 		print CL_TXT + '-- H / Amount : ' + CL_DEF + str(out) + CL_E
 		return out
@@ -1183,7 +1228,10 @@ class Entries_Class(object):
 		show.append( [CL_TXT + '--' + CL_E, CL_TXT + '----' + CL_E, CL_TXT + '----' + CL_E, CL_TXT + '----' + CL_E, CL_TXT + '----' + CL_E])
 		show.append( [ '', '', '', CL_OUT + str(self.return_time( self.sum()[0] )) + CL_E, CL_OUT + str(self.sum()[1]) + CL_E])
 		if self.sum()[0] > 0:
+			# hourly wage
 			show.append( [ '', '', '', '', CL_OUT + str( round(self.sum()[1] / self.sum()[0], 2) ) + ' E/h' + CL_E ])
+			# deliver date
+			show.append( [ '', '', '', '', CL_OUT + '--> ' + self.deliver_date() + CL_E ])
 		print tabulate(show, head)
 		print
 
@@ -1247,6 +1295,10 @@ class Entries_Class(object):
 				self.project_name = user
 				loaded_project = user
 
+			user = raw_input(CL_TXT + 'Project about [' + CL_DEF + self.project_about + CL_TXT + ']: ' + CL_E)
+			if user:
+				self.project_about = user
+
 			self.project_offer_filename = self.project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', self.project_name.replace(' ', '_'))
 			def_choice = False
 			user = raw_input(CL_TXT + 'Offer output file (g=generate) [' + CL_DEF + self.project_offer_filename + CL_TXT + ']: ' + CL_E)
@@ -1269,9 +1321,16 @@ class Entries_Class(object):
 				else:
 					self.project_round = False
 
-			user = raw_input(CL_TXT + 'Commodity [' + CL_DEF + self.project_commodity + CL_TXT + ']:' + CL_E)
+			user = raw_input(CL_TXT + 'Commodity [' + CL_DEF + self.project_commodity + CL_TXT + ']: ' + CL_E)
 			if user:
 				self.project_commodity = user
+
+			user = raw_input(CL_TXT + 'Hours / day [' + CL_DEF + str(self.project_hoursday) + CL_TXT + ']: ' + CL_E)
+			if user:
+				try:
+					self.project_hoursday = int(user)
+				except Exception, e:
+					print CL_INF + 'Wrong input. Using default.' + CL_E
 
 			user = raw_input(CL_TXT + 'Save to client presets? [' + CL_DEF + 'no' + CL_TXT + '] : ' + CL_E)
 			if user.lower() == 'yes' or user.lower() == 'y':
@@ -1299,8 +1358,10 @@ class Entries_Class(object):
 					client['address'] = unicode(self.project_client_address, 'utf-8')
 					client['city'] = unicode(self.project_client_city, 'utf-8')
 					client['project'] = unicode(self.project_name, 'utf-8')
+					client['about'] = unicode(self.project_about, 'utf-8')
 					client['date'] = unicode(datetime.datetime.now().strftime(date_format), 'utf-8')
 					client['sum'] = unicode(str(self.sum(self.project_round)[1]).replace('.', decimal).replace(',0', '') + ' ' + self.project_commodity, 'utf-8')
+					client['deliver_date'] = unicode(self.deliver_date(), 'utf-8')
 
 					entries = []
 					for x in xrange(0,self.count()):
@@ -1331,6 +1392,26 @@ class Entries_Class(object):
 			print 'No secretary-module was loaded. Use \'pip install secretary\' to install it.'
 
 		print
+
+	def deliver_date(self):
+		# get the very first possible workday
+		startday = datetime.datetime.now()
+
+		while startday.weekday() not in workdays:
+			startday = startday + datetime.timedelta(days=1)
+
+		# add minimumdays
+		deliverday = add_days(startday, minimumdays)
+
+		# add working days
+		hours = self.sum()[0]
+		working = int(hours / self.project_hoursday)
+		if (hours % self.project_hoursday) != 0:
+			working += 1
+		deliverday = add_days(deliverday, working)
+
+		# output as readable string
+		return deliverday.strftime(date_format)
 
 
 
