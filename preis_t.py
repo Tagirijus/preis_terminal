@@ -644,7 +644,6 @@ def preset_choser_clients(obj, preset):
 		obj.project_company = preset['company']
 		if preset.has_key('client_title'):
 			obj.project_client_title = preset['client_title']
-		print 'DEBUG:', obj.project_client_title
 		if preset.has_key('client_name'):
 			obj.project_client_name = preset['client_name']
 		if preset.has_key('client_address'):
@@ -728,7 +727,6 @@ def save_client_preset(obj, preset):
 	with open (cur_dir + '/clients.preis_presets', 'w') as myfile:
 		out = ''
 		for y, x in preset.iteritems():
-			print 'DEBUG:', x
 			if x.has_key('company'):
 				out += x['company'] + '>' + 'company>' + x['company'] + '\n'
 			if x.has_key('client_title'):
