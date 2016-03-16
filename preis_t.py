@@ -1049,7 +1049,7 @@ class Entries_Class(object):
 			h_unit = 0.4
 		units = raw_input(CL_TXT + '-- units [' + CL_DEF + '1' + CL_TXT + ']: ' + CL_E)
 		try:
-			units = float(unit.replace(',', '.'))
+			units = float(units.replace(',', '.'))
 		except Exception, e:
 			units = 1.0
 		out = h_unit * units
