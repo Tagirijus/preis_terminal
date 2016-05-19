@@ -326,7 +326,7 @@ def Loader_New():
 								pass
 						if len(y) > 3:
 							try:
-								Entries.mods[ len( Entries.mods ) - 1 ].time = float(y[3])
+								Entries.mods[ len( Entries.mods ) - 1 ].time = eval(y[3])
 							except Exception, e:
 								pass
 						if len(y) > 4:
