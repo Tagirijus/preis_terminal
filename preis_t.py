@@ -895,6 +895,7 @@ class Entries_Class(object):
 					try:
 						order = int(order)
 						self.reorder(old_which, order)
+						return
 					except Exception, e:
 						print CL_INF + 'Order not changed. Need integer.' + CL_E
 
@@ -943,6 +944,7 @@ class Entries_Class(object):
 					try:
 						order = int(order)
 						self.reorder(old_which, order)
+						return
 					except Exception, e:
 						print CL_INF + 'Order not changed. Need integer.' + CL_E
 
@@ -987,6 +989,7 @@ class Entries_Class(object):
 					try:
 						order = int(order)
 						self.reorder(old_which, order)
+						return
 					except Exception, e:
 						print CL_INF + 'Order not changed. Need integer.' + CL_E
 
