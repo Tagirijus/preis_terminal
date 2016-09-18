@@ -94,6 +94,12 @@ CL_E = configuration.CL_E
 
 # functions
 
+def cancel(user_input):
+	if user_input == '<':
+		return True
+	else:
+		return False
+
 def add_days(start, days):
 	tmp = days
 	end = start
@@ -563,12 +569,18 @@ def preset_choser(what, preset, title='', comment=''):
 	if preset.has_key('time'):
 		if what == 'fix':
 			title_tmp = raw_input(CL_TXT + 'Title [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
+			if cancel(title_tmp):
+				return
 			if title_tmp:
 				title = title_tmp
 			comment_tmp = raw_input(CL_TXT + 'Comment [' + CL_DEF + comment + CL_TXT + ']: ' + CL_E)
+			if cancel(comment_tmp):
+				return
 			if comment_tmp:
 				comment = comment_tmp
 			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + ']: ' + CL_E)
+			if cancel(amount):
+				return
 			try:
 				amount = float(amount.replace(',', '.')) or 1.0
 			except Exception, e:
@@ -576,12 +588,18 @@ def preset_choser(what, preset, title='', comment=''):
 			Entries.add(what='fix', title=title, h=float(preset['time']), price=float(preset['price']), amount=amount, comment=comment, order=Entries.count())
 		elif what == 'entry':
 			title_tmp = raw_input(CL_TXT + 'Title [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
+			if cancel(title_tmp):
+				return
 			if title_tmp:
 				title = title_tmp
 			comment_tmp = raw_input(CL_TXT + 'Comment [' + CL_DEF + comment + CL_TXT + ']: ' + CL_E)
+			if cancel(comment_tmp):
+				return
 			if comment_tmp:
 				comment = comment_tmp
 			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + ']: ' + CL_E)
+			if cancel(amount):
+				return
 			try:
 				amount = float(amount.replace(',', '.')) or 1.0
 			except Exception, e:
@@ -589,17 +607,25 @@ def preset_choser(what, preset, title='', comment=''):
 			Entries.add(what='entry', title=title, h=float(preset['time']), amount=amount, comment=comment, order=Entries.count())
 		elif what == 'mod':
 			title_tmp = raw_input(CL_TXT + 'Title [' + CL_DEF + title + CL_TXT + ']: ' + CL_E)
+			if cancel(title_tmp):
+				return
 			if title_tmp:
 				title = title_tmp
 			comment_tmp = raw_input(CL_TXT + 'Comment [' + CL_DEF + comment + CL_TXT + ']: ' + CL_E)
+			if cancel(comment_tmp):
+				return
 			if comment_tmp:
 				comment = comment_tmp
 			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + ']: ' + CL_E)
+			if cancel(amount):
+				return
 			try:
 				amount = float(amount.replace(',', '.')) or 1.0
 			except Exception, e:
 				amount = 1.0
 			entries = raw_input(CL_TXT + 'Entries: ' + CL_E)
+			if cancel(entries):
+				return
 			if entries:
 				try:
 					entries = tuple(entries.split(','))
@@ -620,6 +646,8 @@ def preset_choser(what, preset, title='', comment=''):
 			print CL_TXT + '(' + str(i) + ') ' + x + CL_E
 			c.append(x)
 		chose = raw_input(CL_TXT + 'Preset: ' + CL_E)
+		if cancel(chose):
+			return
 		try:
 			chose = int(chose)
 		except Exception, e:
@@ -658,20 +686,28 @@ def preset_choser_clients(obj, preset):
 			obj.project_hoursday = int(preset['hoursday'])
 
 		user = raw_input(CL_TXT + 'Project name [' + CL_DEF + obj.project_name + CL_TXT + ']: ' + CL_E)
+		if cancel(user):
+			return
 		if user:
 			obj.project_name = user
 			loaded_project = user
 
 		user = raw_input(CL_TXT + 'Project about [' + CL_DEF + obj.project_about + CL_TXT + ']: ' + CL_E)
+		if cancel(user):
+			return
 		if user:
 			obj.project_about = user
 
 		obj.project_offer_filename = obj.project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', obj.project_name.replace(' ', '_'))
 		def_choice = False
 		user = raw_input(CL_TXT + 'Offer output file (g=generate) [' + CL_DEF + obj.project_offer_filename + CL_TXT + ']: ' + CL_E)
+		if cancel(user):
+			return
 		if user == 'g':
 			def_generated_filename = def_project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', obj.project_name.replace(' ', '_'))
 			user2 = raw_input(CL_TXT + 'Offer output file [' + CL_DEF + def_generated_filename + CL_TXT + ']: ' + CL_E)
+			if cancel(user2):
+				return
 			if user2 and check_file_exists(user2):
 				obj.project_offer_filename = user2
 			else:
@@ -692,6 +728,8 @@ def preset_choser_clients(obj, preset):
 			c.append(x)
 			i += 1
 		chose = raw_input(CL_TXT + 'Preset: ' + CL_E)
+		if cancel(chose):
+			return
 		try:
 			chose = int(chose)
 		except Exception, e:
@@ -791,10 +829,10 @@ class Entries_Class(object):
 		self.project_round = True
 		self.project_commodity = def_commodity
 		self.project_hoursday = def_hoursday
-		self.Wage = 40
-		self.Wage_Pro = 40
-		self.Wage_Edu = 33
-		self.Wage_Low = 25
+		self.Wage = 50
+		self.Wage_Pro = 50
+		self.Wage_Edu = 40
+		self.Wage_Low = 30
 		self.list = []
 		self.mods = []
 		self.fixed = []
@@ -885,12 +923,16 @@ class Entries_Class(object):
 				which = is_fixed[1]
 
 				delete = raw_input(CL_TXT + 'Delete [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E)
+				if cancel(delete):
+					return
 				if delete == 'yes' or delete == 'y':
 					#self.fixed.pop(which)
 					self.delete_it(old_which)
 					return
 
 				order = raw_input(CL_TXT + 'Order [' + CL_DEF + str(old_which) + CL_TXT + ']: ' + CL_E)
+				if cancel(order):
+					return
 				if order:
 					try:
 						order = int(order)
@@ -900,14 +942,20 @@ class Entries_Class(object):
 						print CL_INF + 'Order not changed. Need integer.' + CL_E
 
 				title = raw_input(CL_TXT + 'Title [' + CL_DEF + self.fixed[which].title + CL_TXT + ']: ' + CL_E)
+				if cancel(title):
+					return
 				title = title or self.fixed[which].title
 				self.fixed[which].title = title
 
 				comment = raw_input(CL_TXT + 'Comment [' + CL_DEF + self.fixed[which].comment + CL_TXT + ']: ' + CL_E)
+				if cancel(comment):
+					return
 				comment = comment or self.fixed[which].comment
 				self.fixed[which].comment = comment
 
 				time = raw_input(CL_TXT + 'Time (0=is no time) [' + CL_DEF + str(self.fixed[which].time) + CL_TXT + ']: ' + CL_E)
+				if cancel(time):
+					return
 				try:
 					time = float(time.replace(',', '.'))
 				except Exception, e:
@@ -915,6 +963,8 @@ class Entries_Class(object):
 				self.fixed[which].time = time
 
 				price = raw_input(CL_TXT + 'Price [' + CL_DEF + str(self.fixed[which].price) + CL_TXT + ']: ' + CL_E)
+				if cancel(price):
+					return
 				try:
 					price = float(price.replace(',', '.'))
 				except Exception, e:
@@ -922,6 +972,8 @@ class Entries_Class(object):
 				self.fixed[which].price = price
 
 				amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + str(self.fixed[which].amount) + CL_TXT + ']: ' + CL_E)
+				if cancel(amount):
+					return
 				try:
 					amount = float(amount.replace(',', '.'))
 				except Exception, e:
@@ -934,12 +986,16 @@ class Entries_Class(object):
 				which = is_entry[1]
 
 				delete = raw_input(CL_TXT + 'Delete [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E)
+				if cancel(delete):
+					return
 				if delete == 'yes' or delete == 'y':
 					#self.list.pop(which)
 					self.delete_it(old_which)
 					return
 
 				order = raw_input(CL_TXT + 'Order [' + CL_DEF + str(old_which) + CL_TXT + ']: ' + CL_E)
+				if cancel(order):
+					return
 				if order:
 					try:
 						order = int(order)
@@ -949,14 +1005,20 @@ class Entries_Class(object):
 						print CL_INF + 'Order not changed. Need integer.' + CL_E
 
 				title = raw_input(CL_TXT + 'Title [' + CL_DEF + self.list[which].title + CL_TXT + ']: ' + CL_E)
+				if cancel(title):
+					return
 				title = title or self.list[which].title
 				self.list[which].title = title
 
 				comment = raw_input(CL_TXT + 'Comment [' + CL_DEF + self.list[which].comment + CL_TXT + ']: ' + CL_E)
+				if cancel(comment):
+					return
 				comment = comment or self.list[which].comment
 				self.list[which].comment = comment
 
 				h = raw_input(CL_TXT + 'H / Amount [' + CL_DEF + str(self.list[which].h) + CL_TXT + ']: ' + CL_E)
+				if cancel(h):
+					return
 				if h == 'e':
 					h = self.hCalc()
 				else:
@@ -967,6 +1029,8 @@ class Entries_Class(object):
 				self.list[which].h = h
 
 				amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + str(self.list[which].amount) + CL_TXT + ']: ' + CL_E)
+				if cancel(amount):
+					return
 				try:
 					amount = float(amount.replace(',', '.'))
 				except Exception, e:
@@ -979,12 +1043,16 @@ class Entries_Class(object):
 				which = is_mod[1]
 
 				delete = raw_input(CL_TXT + 'Delete [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E)
+				if cancel(delete):
+					return
 				if delete == 'yes' or delete == 'y':
 					#self.mods.pop(which)
 					self.delete_it(old_which)
 					return
 
 				order = raw_input(CL_TXT + 'Order [' + CL_DEF + str(old_which) + CL_TXT + ']: ' + CL_E)
+				if cancel(order):
+					return
 				if order:
 					try:
 						order = int(order)
@@ -994,14 +1062,20 @@ class Entries_Class(object):
 						print CL_INF + 'Order not changed. Need integer.' + CL_E
 
 				title = raw_input(CL_TXT + 'Title ['  + CL_DEF + self.mods[which].title + CL_TXT + ']: ' + CL_E)
+				if cancel(title):
+					return
 				title = title or self.mods[which].title
 				self.mods[which].title = title
 
 				comment = raw_input(CL_TXT + 'Comment ['  + CL_DEF + self.mods[which].comment + CL_TXT + ']: ' + CL_E)
+				if cancel(comment):
+					return
 				comment = comment or self.mods[which].comment
 				self.mods[which].comment = comment
 
 				multi = raw_input(CL_TXT + 'Multiplicator [' + CL_DEF + str(self.mods[which].multi) + CL_TXT + ']: ' + CL_E)
+				if cancel(multi):
+					return
 				try:
 					multi = float(multi.replace(',', '.'))
 				except Exception, e:
@@ -1009,6 +1083,8 @@ class Entries_Class(object):
 				self.mods[which].multi = multi
 
 				amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + str(self.mods[which].amount) + CL_TXT + ']: ' + CL_E)
+				if cancel(amount):
+					return
 				try:
 					amount = float(amount.replace(',', '.'))
 				except Exception, e:
@@ -1016,6 +1092,8 @@ class Entries_Class(object):
 				self.mods[which].amount = amount
 
 				entries = raw_input(CL_TXT + 'Entries [' + CL_DEF + self.entries_to_index(self.mods[which].entries) + CL_TXT + ']: ' + CL_E)
+				if cancel(entries):
+					return
 				if entries:
 					try:
 						entries = tuple(entries.split(','))
@@ -1027,6 +1105,8 @@ class Entries_Class(object):
 				self.mods[which].entries = entries
 
 				time = raw_input(CL_TXT + 'Time [' + CL_DEF + self.mods[which].getTime_status() + CL_TXT + ']: ' + CL_E)
+				if cancel(time):
+					return
 				if time:
 					if time.lower() == 'y' or time.lower() == 'yes':
 						time = True
@@ -1046,11 +1126,15 @@ class Entries_Class(object):
 
 	def hCalc(self):
 		h_unit = raw_input(CL_TXT + '-- H / unit [' + CL_DEF + '0.4' + CL_TXT + ']: ' + CL_E)
+		if cancel(h_unit):
+			return
 		try:
 			h_unit = float(h_unit.replace(',', '.'))
 		except Exception, e:
 			h_unit = 0.4
 		units = raw_input(CL_TXT + '-- units [' + CL_DEF + '1' + CL_TXT + ']: ' + CL_E)
+		if cancel(units):
+			return
 		try:
 			units = float(units.replace(',', '.'))
 		except Exception, e:
@@ -1062,23 +1146,33 @@ class Entries_Class(object):
 	def add_edit(self, what):
 		if what == 'fix':
 			title = raw_input(CL_TXT + 'Title [' + CL_DEF + 'Baseprice' + CL_TXT + ']: ' + CL_E)
+			if cancel(title):
+				return
 			title = title or 'Baseprice'
 
 			comment = raw_input(CL_TXT + 'Comment []: ' + CL_E)
+			if cancel(comment):
+				return
 
 			time = raw_input(CL_TXT + 'Time (0=is no time) []: ' + CL_E)
+			if cancel(time):
+				return
 			try:
 				time = float(time.replace(',', '.'))
 			except Exception, e:
 				time = 0
 
 			price = raw_input(CL_TXT + 'Price [' + CL_DEF + '0.0' + CL_TXT + ']: ' + CL_E)
+			if cancel(price):
+				return
 			try:
 				price = float(price.replace(',', '.'))
 			except Exception, e:
 				price = 0.0
 
 			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + ']: ' + CL_E)
+			if cancel(amount):
+				return
 			try:
 				amount = float(amount.replace(',', '.'))
 			except Exception, e:
@@ -1088,11 +1182,17 @@ class Entries_Class(object):
 
 		elif what == 'entry':
 			title = raw_input(CL_TXT + 'Title [' + CL_DEF + 'Music' + CL_TXT + ']: ' + CL_E)
+			if cancel(title):
+				return
 			title = title or 'Music'
 
 			comment = raw_input(CL_TXT + 'Comment []: ' + CL_E)
+			if cancel(comment):
+				return
 
 			h = raw_input(CL_TXT + 'H / Amount [' + CL_DEF + '1.6' + CL_TXT + ']: ' + CL_E)
+			if cancel(h):
+				return
 			if h == 'e':
 				h = self.hCalc()
 			else:
@@ -1102,6 +1202,8 @@ class Entries_Class(object):
 					h = 1.6
 
 			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + ']: ' + CL_E)
+			if cancel(amount):
+				return
 			try:
 				amount = float(amount.replace(',', '.'))
 			except Exception, e:
@@ -1111,23 +1213,33 @@ class Entries_Class(object):
 
 		elif what == 'mod':
 			title = raw_input(CL_TXT + 'Title [' + CL_DEF + 'Exclusive' + CL_TXT + ']: ' + CL_E)
+			if cancel(title):
+				return
 			title = title or 'Exclusive'
 
 			comment = raw_input(CL_TXT + 'Comment []: ' + CL_E)
+			if cancel(comment):
+				return
 
 			multi = raw_input(CL_TXT + 'Multiplicator [' + CL_DEF + '3.0' + CL_TXT + ']: ' + CL_E)
+			if cancel(multi):
+				return
 			try:
 				multi = float(multi.replace(',', '.'))
 			except Exception, e:
 				multi = 3
 
 			amount = raw_input(CL_TXT + 'Amount [' + CL_DEF + '1' + CL_TXT + ']: ' + CL_E)
+			if cancel(amount):
+				return
 			try:
 				amount = float(amount.replace(',', '.'))
 			except Exception, e:
 				amount = 1.0
 
 			entries = raw_input(CL_TXT + 'Entries []: ' + CL_E)
+			if cancel(entries):
+				return
 			if entries:
 				try:
 					entries = tuple(entries.split(','))
@@ -1138,6 +1250,8 @@ class Entries_Class(object):
 				entries = []
 
 			time = raw_input(CL_TXT + 'Time [' + CL_DEF + 'no' + CL_TXT + ']: ' + CL_E)
+			if cancel(time):
+				return
 			if time:
 				if time.lower() == 'y' or time.lower() == 'yes':
 					time = True
@@ -1243,6 +1357,8 @@ class Entries_Class(object):
 		print CL_TXT + '(c) Low [' + CL_DEF + str(self.Wage_Low) + CL_TXT + ']' + CL_E
 		print CL_TXT + '(any number) Individual wage' + CL_E
 		wager = raw_input(CL_TXT + '# ' + CL_E)
+		if cancel(wager):
+			return
 		if wager == 'a':
 			self.Wage = self.Wage_Pro
 		elif wager == 'b':
@@ -1264,6 +1380,8 @@ class Entries_Class(object):
 
 		preset_chosing = False
 		user = raw_input(CL_TXT + 'Chose from preset? [' + CL_DEF + 'no' + CL_TXT + '] : ' + CL_E)
+		if cancel(user):
+			return
 		if user.lower() == 'yes' or user.lower() == 'y':
 			preset_chosing = True
 
@@ -1272,40 +1390,58 @@ class Entries_Class(object):
 			print
 		else:
 			user = raw_input(CL_TXT + 'Company name [' + CL_DEF + self.project_company + CL_TXT + ']: ' + CL_E)
+			if cancel(user):
+				return
 			if user:
 				self.project_company = user
 
 			user = raw_input(CL_TXT + 'Client title [' + CL_DEF + self.project_client_title + CL_TXT + ']: ' + CL_E)
+			if cancel(user):
+				return
 			if user:
 				self.project_client_title = user
 
 			user = raw_input(CL_TXT + 'Client name [' + CL_DEF + self.project_client_name + CL_TXT + ']: ' + CL_E)
+			if cancel(user):
+				return
 			if user:
 				self.project_client_name = user
 
 			user = raw_input(CL_TXT + 'Client address [' + CL_DEF + self.project_client_address + CL_TXT + ']: ' + CL_E)
+			if cancel(user):
+				return
 			if user:
 				self.project_client_address = user
 
 			user = raw_input(CL_TXT + 'Client city [' + CL_DEF + self.project_client_city + CL_TXT + ']: ' + CL_E)
+			if cancel(user):
+				return
 			if user:
 				self.project_client_city = user
 
 			user = raw_input(CL_TXT + 'Project name [' + CL_DEF + self.project_name + CL_TXT + ']: ' + CL_E)
+			if cancel(user):
+				return
 			if user:
 				self.project_name = user
 				loaded_project = user
 
 			user = raw_input(CL_TXT + 'Project about [' + CL_DEF + self.project_about + CL_TXT + ']: ' + CL_E)
+			if cancel(user):
+				return
 			if user:
 				self.project_about = user
 
 			self.project_offer_filename = self.project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', self.project_name.replace(' ', '_'))
 			def_choice = False
 			user = raw_input(CL_TXT + 'Offer output file (g=generate) [' + CL_DEF + self.project_offer_filename + CL_TXT + ']: ' + CL_E)
+			if cancel(user):
+				return
 			if user == 'g':
 				def_generated_filename = def_project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', self.project_name.replace(' ', '_'))
 				user2 = raw_input(CL_TXT + 'Offer output file [' + CL_DEF + def_generated_filename + CL_TXT + ']: ' + CL_E)
+				if cancel(user2):
+					return
 				if user2 and check_file_exists(user2):
 					self.project_offer_filename = user2
 				else:
@@ -1316,6 +1452,8 @@ class Entries_Class(object):
 
 			tmp_round = 'yes' if self.project_round else 'no'
 			user = raw_input(CL_TXT + 'Round exported output? [' + CL_DEF + tmp_round + CL_TXT + ']: ' + CL_E)
+			if cancel(user):
+				return
 			if user:
 				if user == 'y' or user == 'yes':
 					self.project_round = True
@@ -1323,10 +1461,14 @@ class Entries_Class(object):
 					self.project_round = False
 
 			user = raw_input(CL_TXT + 'Commodity [' + CL_DEF + self.project_commodity + CL_TXT + ']: ' + CL_E)
+			if cancel(user):
+				return
 			if user:
 				self.project_commodity = user
 
 			user = raw_input(CL_TXT + 'Hours / day [' + CL_DEF + str(self.project_hoursday) + CL_TXT + ']: ' + CL_E)
+			if cancel(user):
+				return
 			if user:
 				try:
 					self.project_hoursday = int(user)
@@ -1334,6 +1476,8 @@ class Entries_Class(object):
 					print CL_INF + 'Wrong input. Using default.' + CL_E
 
 			user = raw_input(CL_TXT + 'Save to client presets? [' + CL_DEF + 'no' + CL_TXT + '] : ' + CL_E)
+			if cancel(user):
+				return
 			if user.lower() == 'yes' or user.lower() == 'y':
 				save_client_preset(self, presets_clients)
 
@@ -1343,6 +1487,8 @@ class Entries_Class(object):
 		if secretary_available:
 			self.project_offer_filename = self.project_offer_filename.replace('{YEAR}', datetime.datetime.now().strftime('%Y')).replace('{PROJECT_NAME}', self.project_name.replace(' ', '_'))
 			user = raw_input(CL_TXT + 'Filename for export [' + CL_DEF + self.project_offer_filename + CL_TXT + ']: ' + CL_E)
+			if cancel(user):
+				return
 			if not user == '.':
 				if not user:
 					user = self.project_offer_filename
